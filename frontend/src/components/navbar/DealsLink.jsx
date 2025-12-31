@@ -1,9 +1,33 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Tag } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { getProducts } from '../../services/productService';
 
-const DealsLink = ({ dealCount }) => {
+const DealsLink = () => {
+  const [dealCount, setDealCount] = useState(0);
+
+  useEffect(() => {
+    const fetchDeals = async () => {
+      try {
+        // Assuming 'promotion' field exists or we filter by category 'offers'
+        // Adjust the query based on actual backend schema. 
+        // For now, fetching items with a 'promotion' field or similar logic.
+        const { totalDocs } = await getProducts({ 
+            where: { 
+                promotion: { exists: true } 
+            },
+            limit: 1 // We only need the count
+        });
+        setDealCount(totalDocs);
+      } catch (error) {
+        // Fallback or silent error
+        console.warn('Failed to fetch deal count');
+      }
+    };
+
+    fetchDeals();
+  }, []);
+
   return (
     <Link 
       to="/?filter=offers" 
