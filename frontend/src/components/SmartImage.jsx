@@ -6,6 +6,26 @@ const SmartImage = ({ src, alt, className, ...props }) => {
   // Usamos un placeholder real de servicio público en lugar de un string roto
   const fallbackImage = 'https://placehold.co/600x600/png?text=No+Image';
 
+  // Lógica para construir URL completa si viene de Payload (ruta relativa)
+  const getFullSrc = (imageSrc) => {
+    if (!imageSrc) return fallbackImage;
+    if (imageSrc.startsWith('http') || imageSrc.startsWith('blob:') || imageSrc.startsWith('data:')) {
+      return imageSrc;
+    }
+    // Asumimos que si empieza con /, es una imagen local del servidor Payload
+    if (imageSrc.startsWith('/')) {
+        // VITE_API_URL suele ser .../api, necesitamos la base. 
+        // Si VITE_API_URL es 'http://localhost:3000/api', queremos 'http://localhost:3000'
+        const baseUrl = import.meta.env.VITE_API_URL 
+            ? import.meta.env.VITE_API_URL.replace('/api', '') 
+            : '';
+        return `${baseUrl}${imageSrc}`;
+    }
+    return imageSrc;
+  };
+
+  const finalSrc = error ? fallbackImage : getFullSrc(src);
+
   const handleError = () => {
     setError(true);
     // En producción, aquí enviarías el error a Sentry o LogRocket
@@ -14,7 +34,7 @@ const SmartImage = ({ src, alt, className, ...props }) => {
 
   return (
     <img
-      src={error || !src ? fallbackImage : src}
+      src={finalSrc}
       alt={alt || 'Producto'}
       className={cn(
         "transition-opacity duration-500 ease-in-out", 

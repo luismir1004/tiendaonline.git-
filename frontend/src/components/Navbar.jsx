@@ -6,6 +6,7 @@ import useCartStore from '../stores/cartStore';
 import useAuthStore from '../stores/authStore';
 import useWishlistStore from '../stores/wishlistStore';
 import SearchOverlay from './SearchOverlay';
+import { useProducts } from '../hooks/useProducts';
 
 // Enterprise Components
 import DesktopMegaMenu from './navbar/DesktopMegaMenu';
@@ -35,6 +36,9 @@ const Navbar = () => {
   const { isAuthenticated, currentUser, logout } = useAuthStore();
   const wishlistCount = useWishlistStore((state) => state.wishlist.length);
   const openWishlist = useWishlistStore((state) => state.openWishlist);
+  
+  // Fetch products for search overlay
+  const { products } = useProducts();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -66,10 +70,10 @@ const Navbar = () => {
 
   return (
     <>
-      <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+      <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} products={products} />
       <SupportDrawer isOpen={supportDrawerOpen} onClose={() => setSupportDrawerOpen(false)} />
       
-      <header 
+      <header  
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${
           isScrolled || activeMenu
             ? 'bg-white/90 backdrop-blur-xl border-slate-200/50 py-3 shadow-sm' 

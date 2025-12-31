@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { mockProducts } from '../data/mockData'; // Importamos datos directamente para búsqueda rápida
 
-const SearchOverlay = ({ isOpen, onClose }) => {
+// Ahora recibimos 'products' como prop desde el padre (App/Layout)
+const SearchOverlay = ({ isOpen, onClose, products = [] }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const inputRef = useRef(null);
@@ -17,19 +17,23 @@ const SearchOverlay = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  // Lógica de búsqueda
+  // Lógica de búsqueda usando los productos dinámicos
   useEffect(() => {
     if (query.trim() === '') {
       setResults([]);
       return;
     }
 
-    const filtered = mockProducts.filter(product => 
-      product.name.toLowerCase().includes(query.toLowerCase()) ||
-      product.category.toLowerCase().includes(query.toLowerCase())
-    );
+    // Filtrado seguro verificando que products sea un array
+    const sourceData = Array.isArray(products) ? products : [];
+
+    const filtered = sourceData.filter(product => {
+      const nameMatch = product.name?.toLowerCase().includes(query.toLowerCase());
+      const catMatch = product.category?.toLowerCase().includes(query.toLowerCase());
+      return nameMatch || catMatch;
+    });
     setResults(filtered);
-  }, [query]);
+  }, [query, products]);
 
   const handleNavigate = (productId) => {
     onClose();
