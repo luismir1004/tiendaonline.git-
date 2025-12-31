@@ -22,6 +22,13 @@ import { DefaultDocumentIDType, Where } from 'payload'
 
 export const ProductsCollection: CollectionOverride = ({ defaultCollection }) => ({
   ...defaultCollection,
+  // --- SEGURIDAD: Control de Acceso ---
+  access: {
+    read: () => true, // Público: Todos pueden ver productos
+    create: ({ req }) => !!req.user, // Solo usuarios autenticados (Admins)
+    update: ({ req }) => !!req.user,
+    delete: ({ req }) => !!req.user,
+  },
   admin: {
     ...defaultCollection?.admin,
     defaultColumns: ['title', 'enableVariants', '_status', 'variants.variants'],

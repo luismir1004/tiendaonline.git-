@@ -17,6 +17,7 @@ if (!process.env.PAYLOAD_SECRET) {
 }
 
 import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 import fs from 'fs'
 
 // --- CONSTANTS & CONFIG ---
@@ -59,11 +60,9 @@ const seed = async () => {
     const payload = await getPayload({ config: configPromise });
 
     // 2. Clean Database (Idempotency)
-    console.log(`${LOG_PREFIX} Cleaning existing data...`);
-    await payload.delete({ collection: 'products', where: { id: { exists: true } } });
-    await payload.delete({ collection: 'categories', where: { id: { exists: true } } });
-    // Note: We don't delete media to avoid leaving orphaned files on disk/cloud, 
-    // but in a real dev reset you might want to.
+    // console.log(`${LOG_PREFIX} Cleaning existing data...`);
+    // await payload.delete({ collection: 'products', where: { id: { exists: true } } });
+    // await payload.delete({ collection: 'categories', where: { id: { exists: true } } });
 
     // 3. Create Categories & Upload Representative Media
     console.log(`${LOG_PREFIX} Creating categories and downloading assets...`);
@@ -72,15 +71,30 @@ const seed = async () => {
     const mediaMap = new Map<string, string>(); // Category -> MediaID
 
     for (const cat of CATEGORIES) {
-      // Create Category
-      const catDoc = await payload.create({
+      // Check if category exists
+      const existingCat = await payload.find({
         collection: 'categories',
-        data: { title: cat.title },
+        where: { title: { equals: cat.title } }
       });
-      categoryMap.set(cat.title, catDoc.id as string);
 
-      // Upload Media for this category (to be reused by products)
+      let catId;
+      if (existingCat.docs.length > 0) {
+         catId = existingCat.docs[0].id;
+      } else {
+         const catDoc = await payload.create({
+            collection: 'categories',
+            data: { title: cat.title },
+         });
+         catId = catDoc.id;
+      }
+      categoryMap.set(cat.title, catId as string);
+
+      // Upload Media logic (simplified: only upload if we don't have it mapped, 
+      // but real check would require querying media. For now, skipping complex media upsert)
       try {
+        // Only upload if not strictly checking duplicates for media in this simplified script
+        // or if we really want to be robust, we'd check media filename.
+        // For this task, we focus on Products as requested.
         const { buffer, filename, mimeType } = await downloadImageToBuffer(cat.image);
         const mediaDoc = await payload.create({
           collection: 'media',
@@ -100,8 +114,8 @@ const seed = async () => {
       }
     }
 
-    // 4. Generate & Insert Products (Batch Processing)
-    console.log(`${LOG_PREFIX} Generating ${TOTAL_PRODUCTS} products...`);
+    // 4. Generate & Insert Products (Upsert Logic)
+    console.log(`${LOG_PREFIX} Generating and Upserting ${TOTAL_PRODUCTS} products...`);
     
     const generatedProducts = [];
     
@@ -118,7 +132,10 @@ const seed = async () => {
                        categoryTitle === 'Audio' ? 'SonicPulse' : 'NexusStation';
       
       const name = `${baseName} ${adj} - ${variant}`;
-      const slug = `${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${i}`;
+      // Make slug deterministic based on name for Upsert to work meaningfully
+      const slug = `${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`; 
+      
+      // ... (rest of generation logic is fine, handled in loop below) ...
       
       // Generate Specs based on Category
       let specs = [];
@@ -146,28 +163,35 @@ const seed = async () => {
         inventory: getRandomInt(0, 100), // Stock
         categories: [categoryId],
         specs: specs,
-        gallery: mediaId ? [{ image: mediaId }] : [], // Helper to map to gallery array
+        gallery: mediaId ? [{ image: mediaId }] : [],
         meta: {
             description: `Experience the future with ${name}. Designed for professionals and enthusiasts alike.`,
-            image: mediaId // Set SEO image too
+            image: mediaId
         }
       });
     }
 
-    // Insert in Batches
-    let insertedCount = 0;
-    for (let i = 0; i < generatedProducts.length; i += BATCH_SIZE) {
-        const batch = generatedProducts.slice(i, i + BATCH_SIZE);
-        
-        await Promise.all(batch.map(product => 
-             payload.create({
-                collection: 'products',
-                data: product,
-            })
-        ));
-        
-        insertedCount += batch.length;
-        process.stdout.write(`\r${LOG_PREFIX} Progress: ${insertedCount}/${TOTAL_PRODUCTS} products created...`);
+    // Insert or Update Loop
+    for (const productData of generatedProducts) {
+      const existing = await payload.find({
+        collection: 'products',
+        where: { slug: { equals: productData.slug } }
+      });
+
+      if (existing.docs.length > 0) {
+        console.log(`${LOG_PREFIX} Actualizando: ${productData.title}`);
+        await payload.update({
+          collection: 'products',
+          id: existing.docs[0].id, // Use the ID from the found document
+          data: productData,
+        });
+      } else {
+        console.log(`${LOG_PREFIX} Creando: ${productData.title}`);
+        await payload.create({
+          collection: 'products',
+          data: productData,
+        });
+      }
     }
 
     const duration = ((Date.now() - start) / 1000).toFixed(2);

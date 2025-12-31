@@ -27,18 +27,19 @@ const dirname = path.dirname(filename)
 
 export default buildConfig({
   // Security: CORS & CSRF
+  // Definimos explícitamente los dominios permitidos para evitar inyecciones.
   cors: [
-    process.env.PAYLOAD_PUBLIC_SERVER_URL || '',
-    process.env.NEXT_PUBLIC_SERVER_URL || '', 
+    'https://mi-tienda-china-frontend.vercel.app', // Ejemplo de Prod
+    'https://admin.mi-tienda-china.com',
     'http://localhost:5173', 
     'http://localhost:3000'
-  ].filter(Boolean),
+  ],
   csrf: [
-    process.env.PAYLOAD_PUBLIC_SERVER_URL || '',
-    process.env.NEXT_PUBLIC_SERVER_URL || '',
+    'https://mi-tienda-china-frontend.vercel.app',
+    'https://admin.mi-tienda-china.com',
     'http://localhost:5173',
     'http://localhost:3000'
-  ].filter(Boolean),
+  ],
   
   admin: {
     components: {
