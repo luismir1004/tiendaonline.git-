@@ -107,11 +107,31 @@ const PageTransition = ({ children }) => (
     </motion.div>
 );
 
+import useCartStore from './stores/cartStore';
+
+// Invisible component to handle global side effects
+const InventorySyncer = () => {
+  const syncStock = useCartStore(state => state.syncStock);
+  
+  React.useEffect(() => {
+    // Sync immediately on mount
+    syncStock();
+    
+    // Optional: Sync on window focus to catch updates if user comes back from another tab
+    const onFocus = () => syncStock();
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [syncStock]);
+
+  return null;
+};
+
 const App = () => {
   return (
     <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
         <Router>
+            <InventorySyncer />
             <ScrollToTop />
             <Layout>
                 <Suspense fallback={<LoadingSpinner />}>

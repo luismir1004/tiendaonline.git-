@@ -1,7 +1,18 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import toast from 'react-hot-toast';
+import { z } from 'zod';
 import { getProductsByIds } from '../services/productService'; // Import to fetch bundle items
+
+// Esquema de validación para evitar datos corruptos
+const ProductSchema = z.object({
+  id: z.union([z.string(), z.number()]),
+  name: z.string().min(1, "El producto debe tener nombre"),
+  price: z.number().min(0, "El precio debe ser positivo"),
+  stock: z.number().optional(),
+  variantName: z.string().optional(),
+  image: z.string().optional(),
+}).passthrough(); // Permitir otras propiedades pero validar las críticas
 
 const useCartStore = create(
   persist(
@@ -14,6 +25,14 @@ const useCartStore = create(
       toggleCart: () => set((state) => ({ isCartOpen: !state.isCartOpen })),
       
       addToCart: (product, quantityToAdd = 1, options = { openDrawer: true }) => {
+        // Validación en tiempo de ejecución
+        const validation = ProductSchema.safeParse(product);
+        if (!validation.success) {
+          console.error("❌ Intento de añadir producto inválido al carrito:", validation.error);
+          toast.error("Error: Datos del producto inválidos. No se pudo añadir.");
+          return;
+        }
+
         set((state) => {
           const existingProductIndex = state.cart.findIndex((item) => item.id === product.id);
           const currentQuantityInCart = existingProductIndex !== -1 ? state.cart[existingProductIndex].quantity : 0;
@@ -185,6 +204,53 @@ const useCartStore = create(
       getCartCount: () => {
         const state = get();
         return state.cart.reduce((total, item) => total + item.quantity, 0);
+      },
+
+      syncStock: async () => {
+        const state = get();
+        if (state.cart.length === 0) return;
+
+        const productIds = [...new Set(state.cart.map(item => item.originalId || item.id))];
+        
+        try {
+          const freshProducts = await getProductsByIds(productIds);
+          let changesMade = false;
+          let warnings = [];
+
+          const updatedCart = state.cart.map(cartItem => {
+            // Find the fresh product data (handle bundles vs single items logic if needed, simplified here)
+            const freshProduct = freshProducts.find(p => p.id === (cartItem.originalId || cartItem.id));
+            
+            if (!freshProduct) return cartItem; // Keep as is if API fails for one item (or maybe remove?)
+
+            // Determine stock based on variant or main product
+            let freshStock = freshProduct.stock || 0;
+            if (cartItem.variantId && freshProduct.variants) {
+                const variant = freshProduct.variants.find(v => v.id === cartItem.variantId);
+                if (variant) freshStock = variant.stock || 0;
+            }
+
+            // Adjust quantity if needed
+            if (cartItem.quantity > freshStock) {
+              changesMade = true;
+              if (freshStock === 0) {
+                 warnings.push(`"${cartItem.name}" se ha agotado y fue eliminado.`);
+                 return null; // Will filter out later
+              } else {
+                 warnings.push(`Stock de "${cartItem.name}" bajo. Cantidad ajustada a ${freshStock}.`);
+                 return { ...cartItem, quantity: freshStock };
+              }
+            }
+            return cartItem;
+          }).filter(Boolean); // Remove nulls (out of stock items)
+
+          if (changesMade) {
+            set({ cart: updatedCart });
+            warnings.forEach(w => toast(w, { icon: '⚠️' }));
+          }
+        } catch (error) {
+          console.error('Failed to sync stock:', error);
+        }
       }
     }),
     {

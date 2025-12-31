@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { mockData } from '../data/mockData'; // Importamos datos directamente para búsqueda rápida
+import { mockProducts } from '../data/mockData'; // Importamos datos directamente para búsqueda rápida
 
 const SearchOverlay = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState('');
@@ -24,7 +24,7 @@ const SearchOverlay = ({ isOpen, onClose }) => {
       return;
     }
 
-    const filtered = mockData.filter(product => 
+    const filtered = mockProducts.filter(product => 
       product.name.toLowerCase().includes(query.toLowerCase()) ||
       product.category.toLowerCase().includes(query.toLowerCase())
     );

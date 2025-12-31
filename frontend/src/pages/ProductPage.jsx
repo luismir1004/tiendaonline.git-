@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ShoppingCart, Loader2, AlertTriangle, Zap, Clock } from 'lucide-react';
-import * as LucideIcons from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Loader2, AlertTriangle, Zap, Clock, ShoppingBag, Truck, Shield, Star, Headphones, Heart } from 'lucide-react';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
 
@@ -11,11 +10,28 @@ import useCartStore from '../stores/cartStore';
 import useHistoryStore from '../stores/historyStore';
 import { cn } from '../lib/utils';
 import SEO from '../components/SEO';
+import SmartImage from '../components/SmartImage';
 
 // --- Robust Icon Component ---
+const ICON_MAP = {
+  Zap,
+  ShoppingBag,
+  Truck,
+  Shield,
+  Star,
+  Headphones,
+  Clock
+};
+
 const DynamicIcon = ({ name, className }) => {
-  const normalizedName = name ? name.charAt(0).toUpperCase() + name.slice(1) : '';
-  const IconComponent = LucideIcons[normalizedName] || LucideIcons.Zap;
+  // Convierte kebab-case o snake_case a PascalCase (ej: shopping-bag -> ShoppingBag)
+  const toPascalCase = (str) => 
+    str?.replace(/(^\w|[_-]\w)/g, (match) => 
+      match.replace(/[_-]/, '').toUpperCase()
+    );
+
+  const normalized = toPascalCase(name);
+  const IconComponent = ICON_MAP[normalized] || Zap;
   return <IconComponent className={className} />;
 };
 
@@ -30,6 +46,16 @@ const ProductPage = () => {
 
   const [activeImage, setActiveImage] = useState(null);
   const [isAdding, setIsAdding] = useState(false);
+  const [mainImageError, setMainImageError] = useState(false);
+
+  // Usamos un ref para trackear qué producto estamos viendo realmente
+  const lastProductId = useRef(null);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
 
   // Scroll Reset
   useEffect(() => {
@@ -38,9 +64,11 @@ const ProductPage = () => {
 
   // Track History & Set Image
   useEffect(() => {
-    if (product) {
+    if (product && product.id !== lastProductId.current) {
       setActiveImage(product.image);
       addToHistory(product);
+      lastProductId.current = product.id; // Marcamos que este producto ya fue procesado
+      setMainImageError(false); // Reset error state on new product
     }
   }, [product, addToHistory]);
 
@@ -61,14 +89,42 @@ const ProductPage = () => {
 
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    addToCart(product, 1);
-    setIsAdding(false);
+    // Solo actualizamos el estado si el usuario sigue en la página
+    if (isMounted.current) {
+      addToCart(product, 1);
+      setIsAdding(false);
+    }
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Loader2 className="w-10 h-10 text-slate-400 animate-spin" />
+      <div className="min-h-screen bg-slate-50 pt-20 px-4 sm:px-6 lg:px-8 pb-20">
+        <div className="max-w-7xl mx-auto animate-pulse">
+           {/* Skeleton Header */}
+           <div className="h-8 w-32 bg-slate-200 rounded mb-8"></div>
+           
+           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
+              {/* Skeleton Image */}
+              <div className="aspect-[4/5] bg-slate-200 rounded-[2.5rem]"></div>
+              
+              {/* Skeleton Content */}
+              <div className="space-y-6 mt-8 lg:mt-0">
+                  <div className="h-4 w-24 bg-slate-200 rounded"></div>
+                  <div className="h-12 w-3/4 bg-slate-200 rounded"></div>
+                  <div className="h-8 w-40 bg-slate-200 rounded"></div>
+                  <div className="space-y-3">
+                      <div className="h-4 w-full bg-slate-200 rounded"></div>
+                      <div className="h-4 w-full bg-slate-200 rounded"></div>
+                      <div className="h-4 w-2/3 bg-slate-200 rounded"></div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                      <div className="h-20 bg-slate-200 rounded-2xl"></div>
+                      <div className="h-20 bg-slate-200 rounded-2xl"></div>
+                  </div>
+                  <div className="h-14 w-full bg-slate-200 rounded-full mt-8"></div>
+              </div>
+           </div>
+        </div>
       </div>
     );
   }
@@ -132,8 +188,9 @@ const ProductPage = () => {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.4 }}
-                            src={activeImage || product.image} 
+                            src={mainImageError ? 'https://placehold.co/600x800?text=No+Image' : (activeImage || product.image)}
                             alt={product.name}
+                            onError={() => setMainImageError(true)}
                             className="w-full h-full object-contain p-8 lg:p-12"
                         />
                     </AnimatePresence>
@@ -151,13 +208,16 @@ const ProductPage = () => {
                         {product.images.map((img, idx) => (
                             <button
                                 key={idx}
-                                onClick={() => setActiveImage(img)}
+                                onClick={() => {
+                                    setActiveImage(img);
+                                    setMainImageError(false);
+                                }}
                                 className={cn(
                                     "w-20 h-20 rounded-2xl border-2 overflow-hidden flex-shrink-0 bg-white p-2 transition-all duration-200",
                                     activeImage === img ? "border-slate-900 scale-105" : "border-transparent hover:border-slate-200"
                                 )}
                             >
-                                <img src={img} alt={`View ${idx}`} className="w-full h-full object-contain" />
+                                <SmartImage src={img} alt={`View ${idx}`} className="w-full h-full object-contain" />
                             </button>
                         ))}
                     </div>
@@ -247,7 +307,7 @@ const ProductPage = () => {
                     </button>
                     
                     <button className="h-14 w-14 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-all active:scale-90">
-                        <LucideIcons.Heart size={22} />
+                        <Heart size={22} />
                     </button>
                 </div>
             </div>
@@ -269,7 +329,7 @@ const ProductPage = () => {
                             className="group cursor-pointer"
                         >
                             <div className="aspect-square bg-white rounded-2xl border border-slate-100 p-4 mb-3 overflow-hidden transition-all group-hover:border-slate-300">
-                                <img src={p.image} alt={p.name} className="w-full h-full object-contain transition-transform group-hover:scale-110" />
+                                <SmartImage src={p.image} alt={p.name} className="w-full h-full object-contain transition-transform group-hover:scale-110" />
                             </div>
                             <h4 className="font-semibold text-slate-900 text-sm truncate">{p.name}</h4>
                             <p className="text-slate-500 text-xs mt-1">${p.price.toLocaleString()}</p>
