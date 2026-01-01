@@ -87,7 +87,7 @@ const HomePage = () => {
       
       <Hero />
 
-      <div id="products" className="py-16 lg:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div id="products" className="py-16 lg:py-24 max-w-7xl mx-auto px-6 lg:px-20">
           
           {/* Header & Filter Bar */}
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
@@ -103,7 +103,7 @@ const HomePage = () => {
                         key={cat}
                         onClick={() => handleCategoryChange(cat)}
                         className={`
-                            whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border
+                            whitespace-nowrap px-4 py-3 rounded-full text-sm font-medium transition-all duration-300 border min-h-[44px]
                             ${selectedCategory === cat 
                                 ? 'bg-slate-900 text-white border-slate-900 shadow-lg scale-105' 
                                 : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50'}
@@ -118,7 +118,7 @@ const HomePage = () => {
           {/* Grid Area */}
           <motion.div 
             layout 
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12"
+            className="grid grid-cols-1 min-[450px]:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12"
           >
             <AnimatePresence mode="popLayout">
                 {isLoading ? (

@@ -62,12 +62,12 @@ const QuickViewModal = ({ isOpen, onClose, product }) => {
           {/* Modal Card */}
           <motion.div
             layoutId={`product-card-${product.id}`}
-            className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh]"
+            className="relative w-[90%] md:w-full md:max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >
             <button 
                 onClick={onClose}
-                className="absolute top-4 right-4 z-20 p-2 bg-white/50 hover:bg-white rounded-full transition-colors"
+                className="absolute top-4 right-4 z-20 p-3 bg-white/50 hover:bg-white rounded-full transition-colors"
             >
                 <X size={20} className="text-slate-500" />
             </button>

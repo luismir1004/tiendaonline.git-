@@ -64,7 +64,7 @@ const ProductCard = memo(({ product }) => {
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.3 }}
-      className="group relative flex flex-col bg-white rounded-2xl overflow-hidden cursor-pointer"
+      className="group relative flex flex-col bg-white rounded-[2rem] overflow-hidden cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => { setIsHovered(false); setActiveVariant(null); }}
       onClick={handleCardClick}
@@ -86,18 +86,18 @@ const ProductCard = memo(({ product }) => {
             </div>
 
             {/* Actions (Top Right) */}
-            <div className="absolute top-3 right-3 z-20 flex flex-col gap-2 translate-x-10 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300">
+            <div className="absolute top-3 right-3 z-20 flex flex-col gap-2 translate-x-10 opacity-0 md:group-hover:translate-x-0 md:group-hover:opacity-100 transition-all duration-300">
                  <button
                     onClick={(e) => { e.stopPropagation(); toggleItem(product); }}
-                    className={`p-2 rounded-full shadow-sm transition-colors ${isLiked ? 'bg-red-50 text-red-500' : 'bg-white text-slate-400 hover:text-slate-900'}`}
+                    className={`p-3 rounded-full shadow-sm transition-colors ${isLiked ? 'bg-red-50 text-red-500' : 'bg-white text-slate-400 hover:text-slate-900'}`}
                  >
-                     <Heart size={16} fill={isLiked ? "currentColor" : "none"} />
+                     <Heart size={18} fill={isLiked ? "currentColor" : "none"} />
                  </button>
                  <button
                     onClick={(e) => { e.stopPropagation(); addToCompare(product); }}
-                    className={`p-2 rounded-full shadow-sm transition-colors ${isInCompare ? 'bg-indigo-50 text-indigo-600' : 'bg-white text-slate-400 hover:text-slate-900'}`}
+                    className={`p-3 rounded-full shadow-sm transition-colors ${isInCompare ? 'bg-indigo-50 text-indigo-600' : 'bg-white text-slate-400 hover:text-slate-900'}`}
                  >
-                     <Scale size={16} />
+                     <Scale size={18} />
                  </button>
             </div>
 
@@ -106,7 +106,7 @@ const ProductCard = memo(({ product }) => {
                 layoutId={`product-image-${product.id}`}
                 src={displayImage} 
                 alt={product.name}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                className="w-full h-full object-cover transition-transform duration-700 md:group-hover:scale-105"
             />
             
             {/* Stock Overlay */}
@@ -118,7 +118,7 @@ const ProductCard = memo(({ product }) => {
         </div>
 
         {/* --- Info Area --- */}
-        <div className="p-4 flex flex-col flex-grow">
+        <div className="p-5 flex flex-col flex-grow">
             <div className="flex justify-between items-start mb-1">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{product.category || 'Tech'}</p>
                  {/* Variant Dots (Hover to preview) */}
@@ -137,7 +137,7 @@ const ProductCard = memo(({ product }) => {
                  )}
             </div>
             
-            <h3 className="text-base font-semibold text-slate-900 mb-1 leading-tight group-hover:text-indigo-600 transition-colors">
+            <h3 className="text-base font-semibold text-slate-900 mb-1 leading-tight md:group-hover:text-indigo-600 transition-colors">
                 {product.name}
             </h3>
 
@@ -151,10 +151,10 @@ const ProductCard = memo(({ product }) => {
                     onClick={handleQuickAdd}
                     disabled={isOutOfStock}
                     className={`
-                        w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm
+                        w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm
                         ${isOutOfStock ? 'bg-slate-100 text-slate-300' : 
                           addingState === 'success' ? 'bg-emerald-500 text-white' : 
-                          'bg-slate-900 text-white hover:bg-indigo-600 hover:scale-110'}
+                          'bg-slate-900 text-white md:hover:bg-indigo-600 md:hover:scale-110 active:scale-95'}
                     `}
                 >
                     <AnimatePresence mode="wait">

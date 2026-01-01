@@ -237,20 +237,20 @@ const Navbar = () => {
 
               <button 
                 onClick={() => setSearchOpen(true)}
-                className="p-2 text-slate-500 hover:text-slate-900 transition-colors"
+                className="p-3 text-slate-500 hover:text-slate-900 transition-colors"
                 aria-label="Buscar"
               >
-                <Search size={20} />
+                <Search size={22} />
               </button>
 
               <button 
                 onClick={openWishlist}
-                className="relative p-2 text-slate-500 hover:text-red-500 transition-colors hidden sm:block"
+                className="relative p-3 text-slate-500 hover:text-red-500 transition-colors hidden sm:block"
                 aria-label="Favoritos"
               >
-                <Heart size={20} />
+                <Heart size={22} />
                 {wishlistCount > 0 && (
-                  <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full border border-white"></span>
+                  <span className="absolute top-2 right-2 h-2 w-2 bg-red-500 rounded-full border border-white"></span>
                 )}
               </button>
 
@@ -314,10 +314,10 @@ const Navbar = () => {
               {/* Cart Button with Shipping Progress */}
               <button
                 onClick={openCart}
-                className="relative p-2 text-slate-800 hover:text-indigo-600 transition-colors group"
+                className="relative p-3 text-slate-800 hover:text-indigo-600 transition-colors group"
               >
                 {/* Circular Progress for Free Shipping */}
-                <svg className="absolute inset-0 -rotate-90 w-full h-full p-0.5 pointer-events-none" viewBox="0 0 36 36">
+                <svg className="absolute inset-0 -rotate-90 w-full h-full p-1 pointer-events-none" viewBox="0 0 36 36">
                     <path
                         className="text-slate-100"
                         d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
@@ -335,8 +335,8 @@ const Navbar = () => {
                     />
                 </svg>
 
-                <div className="relative z-10 p-1">
-                    <ShoppingCart size={20} />
+                <div className="relative z-10 p-0.5">
+                    <ShoppingCart size={22} />
                 </div>
                 
                 {cartItemCount > 0 && (
@@ -344,7 +344,7 @@ const Navbar = () => {
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     key={cartItemCount}
-                    className="absolute top-0 right-0 bg-indigo-600 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center ring-2 ring-white z-20"
+                    className="absolute top-1 right-1 bg-indigo-600 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center ring-2 ring-white z-20"
                   >
                     {cartItemCount}
                   </motion.span>
@@ -352,10 +352,10 @@ const Navbar = () => {
               </button>
 
               {/* Mobile Menu Toggle */}
-              <div className="md:hidden ml-2">
+              <div className="md:hidden ml-1">
                 <button
                   onClick={() => setMobileMenuOpen(true)}
-                  className="p-2 text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
+                  className="p-3 text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
                 >
                   <Menu size={24} />
                 </button>
@@ -380,7 +380,7 @@ const Navbar = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setMobileMenuOpen(false)}
-                className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 md:hidden"
+                className="fixed inset-0 bg-slate-900/20 backdrop-blur-xl z-50 md:hidden"
               />
               <motion.div
                 ref={mobileMenuRef}
@@ -388,7 +388,7 @@ const Navbar = () => {
                 animate={{ x: 0 }}
                 exit={{ x: '100%' }}
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                className="fixed top-0 right-0 bottom-0 w-[85%] max-w-sm bg-white shadow-2xl z-50 md:hidden flex flex-col"
+                className="fixed top-0 right-0 bottom-0 w-[85%] max-w-sm bg-white/80 backdrop-blur-3xl shadow-2xl z-50 md:hidden flex flex-col border-l border-white/50"
               >
                 <div className="p-6 border-b border-slate-100 flex items-center justify-between">
                   <span className="text-lg font-bold flex items-center gap-2">

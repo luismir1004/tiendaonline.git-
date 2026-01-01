@@ -263,7 +263,7 @@ const Hero = () => {
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-200/20 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-[10%] right-[-5%] w-[40%] h-[40%] bg-blue-100/30 rounded-full blur-[100px] pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+        <div className="max-w-7xl mx-auto px-6 lg:px-20 w-full z-10 flex flex-col lg:grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
             
             {/* --- Left Column: Narrative --- */}
             <div className="flex flex-col items-center lg:items-start text-center lg:text-left order-2 lg:order-1">
@@ -288,7 +288,7 @@ const Hero = () => {
                 variants={textVariants}
                 initial="hidden"
                 animate="visible"
-                className="text-6xl md:text-8xl font-extrabold tracking-tighter text-slate-900 leading-[0.95] mb-6"
+                className="text-5xl md:text-8xl font-extrabold tracking-tighter text-slate-900 leading-[0.95] mb-6"
             >
                 Sonic
                 <br />
