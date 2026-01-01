@@ -1,4 +1,3 @@
-
 import { getPayload } from 'payload'
 import config from '../payload.config'
 import path from 'path'
@@ -12,7 +11,17 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 // Load .env from project root (../../.env relative to src/scripts/seed.ts)
-dotenv.config({ path: path.resolve(dirname, '../../.env') })
+const envPath = path.resolve(dirname, '../../.env')
+dotenv.config({ path: envPath })
+
+// FIX: Force Absolute Path for SQLite to avoid ghost DBs
+// We use 'main.db' as configured in .env and payload.config.ts
+const dbPath = path.resolve(process.cwd(), 'main.db')
+process.env.DATABASE_URL = 'file:' + dbPath
+// Also set URI just in case other parts rely on it
+process.env.DATABASE_URI = process.env.DATABASE_URL
+
+console.log(`[SEED] 🔧 Database Path forced to: ${process.env.DATABASE_URL}`)
 
 // --- Constants & Mock Data Logic ---
 const CATEGORIES = ['Celulares', 'Computación', 'Audio', 'Gaming']
@@ -342,6 +351,7 @@ const seed = async () => {
         data: {
           title: catName,
           slug,
+          _status: 'published', // FIX: Ensure categories are published
         },
       })
       categoryMap.set(catName, newCat.id)
@@ -398,6 +408,7 @@ const seed = async () => {
                 collection: 'media',
                 data: {
                   alt: product.name, // Use product name as alt
+                  _status: 'published', // FIX: Ensure media is published
                 },
                 file: {
                   data: buffer,
@@ -439,7 +450,8 @@ const seed = async () => {
               title: product.name,
               description: product.description.substring(0, 150),
               // image: gallery[0]?.image // Optional: set meta image
-            }
+            },
+            _status: 'published', // FIX: Explicitly publish product
           },
         })
 
@@ -450,6 +462,21 @@ const seed = async () => {
 
     createdCount += batch.length
     console.log(`[SEED] ${Math.min(createdCount, allProducts.length)}/${allProducts.length} productos procesados...`)
+  }
+
+  // --- 4. Final Verification (Smoke Test) ---
+  console.log('[SEED] 🧪 Verifying data integrity...')
+  const totalProducts = await payload.count({
+      collection: 'products',
+  })
+  console.log(`🚀 Verificación final: ${totalProducts.totalDocs} productos encontrados en la base de datos (main.db).`)
+
+  // --- 5. Cache Cleaning ---
+  const nextCachePath = path.resolve(process.cwd(), '.next/cache')
+  if (fs.existsSync(nextCachePath)) {
+      console.log('[SEED] 🧹 Cleaning Next.js cache...')
+      fs.rmSync(nextCachePath, { recursive: true, force: true })
+      console.log('[SEED] Cache cleaned.')
   }
 
   console.log('[SEED] ¡Éxito total! Seeding finished.')
