@@ -29,12 +29,13 @@ const HomePage = () => {
      else setSelectedCategory(categoryParam || 'Todos');
   }, [categoryParam, isOffersFilter]);
 
-  // Data Fetching
-  const { data: products, isLoading, isError } = useProducts();
+  // Data Fetching: Integración corregida con TanStack Query
+  // data viene por defecto como mockProducts gracias a initialData en el hook
+  const { data: products = [], isLoading, isError } = useProducts();
 
   // --- 1. Zero-Latency Filtering (Memoized) ---
   const filteredProducts = useMemo(() => {
-    if (!products) return [];
+    if (!products || products.length === 0) return [];
     
     let result = products;
 
@@ -51,10 +52,10 @@ const HomePage = () => {
   const visibleProducts = filteredProducts.slice(0, visibleCount);
   const hasMore = visibleProducts.length < filteredProducts.length;
 
-  // Derive Categories
+  // Derive Categories dinámicamente
   const categories = useMemo(() => {
-      if (!products) return ['Todos'];
-      const uniqueCats = [...new Set(products.map(p => p.category))];
+      if (!products || products.length === 0) return ['Todos'];
+      const uniqueCats = [...new Set(products.map(p => p.category).filter(Boolean))];
       return ['Todos', 'Ofertas', ...uniqueCats];
   }, [products]);
 
@@ -73,6 +74,9 @@ const HomePage = () => {
   const handleLoadMore = () => {
       setVisibleCount(prev => prev + 4);
   };
+
+  // Lógica de carga: Solo mostramos esqueletos si está cargando Y no tenemos datos (ni mock ni reales)
+  const showSkeletons = isLoading && (!products || products.length === 0);
 
   return (
     <div className="bg-slate-50 min-h-screen">
@@ -121,7 +125,7 @@ const HomePage = () => {
             className="grid grid-cols-1 min-[450px]:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12"
           >
             <AnimatePresence mode="popLayout">
-                {isLoading ? (
+                {showSkeletons ? (
                     Array.from({ length: 8 }).map((_, i) => <SkeletonProduct key={i} />)
                 ) : (
                     visibleProducts.map((product) => (
@@ -136,7 +140,7 @@ const HomePage = () => {
           </motion.div>
           
           {/* Empty State */}
-          {!isLoading && visibleProducts.length === 0 && (
+          {!showSkeletons && visibleProducts.length === 0 && (
               <div className="py-20 text-center">
                   <p className="text-slate-400 text-lg">No hay productos en esta categoría.</p>
                   <button onClick={() => handleCategoryChange('Todos')} className="mt-4 text-indigo-600 font-medium hover:underline">Ver todo el catálogo</button>
@@ -144,7 +148,7 @@ const HomePage = () => {
           )}
 
           {/* Load More Trigger */}
-          {hasMore && (
+          {hasMore && !showSkeletons && (
               <div className="mt-16 flex justify-center">
                   <button 
                     onClick={handleLoadMore}

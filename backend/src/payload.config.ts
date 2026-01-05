@@ -55,7 +55,7 @@ export default buildConfig({
   collections: [Users, Pages, Categories, Media],
   db: sqliteAdapter({
     client: {
-      url: process.env.DATABASE_URL || '',
+      url: process.env.DATABASE_URL || process.env.DATABASE_URI || '',
     },
   }),
   editor: lexicalEditor({

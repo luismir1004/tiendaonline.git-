@@ -196,65 +196,121 @@ const heroProducts = [
 const ADJECTIVES = ['Ultra', 'Neo', 'Prime', 'Elite', 'Max', 'Pro', 'Slim', 'Quantum', 'Fusion', 'Core'];
 const VARIANTS = ['Midnight', 'Starlight', 'Carbon', 'Phantom', 'Silver', 'Gold', 'Forest', 'Deep Purple'];
 
-function generateProceduralProducts(count = 192) {
+/**
+ * Helper: Random integer between min and max (inclusive)
+ */
+const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+/**
+ * Helper: Create a URL-friendly slug
+ */
+const slugify = (text) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+/**
+ * Generates procedural products based on hero templates.
+ * @param {number} count Number of products to generate
+ * @returns {Array} Array of generated product objects
+ */
+function generateProceduralProducts(count = 200) {
   const generated = [];
   
+  if (!heroProducts || heroProducts.length === 0) return generated;
+
   for (let i = 0; i < count; i++) {
-    // Pick a random base template
+    // 1. Pick a random base template to inherit category/image/specs
     const template = heroProducts[i % heroProducts.length];
     
-    // Create Unique Attributes
-    const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
-    const variant = VARIANTS[Math.floor(Math.random() * VARIANTS.length)];
-    const uniqueNum = i + 10;
+    // Safety check for template and crucial properties
+    if (!template || !template.name || !template.category) continue;
+
+    // 2. Randomize Name Attributes
+    const adj = ADJECTIVES[getRandomInt(0, ADJECTIVES.length - 1)];
+    const variant = VARIANTS[getRandomInt(0, VARIANTS.length - 1)];
     
-    // Mutate Data
-    const newName = `${template.name.split('-')[0].trim()} ${adj} - ${variant}`;
-    const newSlug = newName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-    const priceModifier = 0.8 + (Math.random() * 0.4); // +/- 20% price variation
-    const newPrice = Math.round(template.price * priceModifier * 100) / 100; // Round to 2 decimals
-    
+    // 3. Construct New Name & Slug
+    // Example: "Horizon Note" + "Ultra" + "Midnight"
+    const baseName = template.name.split('-')[0].trim(); 
+    const newName = `${baseName} ${adj} - ${variant}`;
+    const uniqueSuffix = 1000 + i; // Start from 1000 to avoid conflicts
+    const newSlug = `${slugify(newName)}-${uniqueSuffix}`;
+
+    // 4. Randomize Price (+/- 15%)
+    // Factor between 0.85 and 1.15
+    const priceFactor = 0.85 + (Math.random() * 0.30);
+    const rawPrice = template.price * priceFactor;
+    // Format: round to 2 decimals
+    const newPrice = Math.round(rawPrice * 100) / 100;
+
+    // 5. Randomize Stock
+    const newStock = getRandomInt(0, 150);
+
+    // 6. Build the Product Object
+    // Critical: Create copies of arrays (images, specs) to avoid reference issues
     generated.push({
-      ...template,
-      id: `gen-${template.category.substring(0,3).toLowerCase()}-${uniqueNum}`,
+      ...template, // Inherit base properties
+      id: `gen-${(template.category || 'misc').substring(0,3).toLowerCase()}-${uniqueSuffix}`,
       name: newName,
       slug: newSlug,
       price: newPrice,
-      stock: Math.floor(Math.random() * 100), // Random stock 0-100
-      isNew: Math.random() > 0.8, // 20% chance of being new
-      isFeatured: Math.random() > 0.9, // 10% chance of being featured
-      // Keep description and specs from template but maybe vary one spec in future
+      stock: newStock,
+      isNew: Math.random() > 0.7, // 30% chance
+      isFeatured: Math.random() > 0.9, // 10% chance
+      // Explicitly copy arrays to be "falla-proof"
+      images: template.images ? [...template.images] : [],
+      specs: template.specs ? [...template.specs] : [],
     });
   }
   
   return generated;
 }
 
-// Export Combined Data
-export const mockProducts = [
+// --- Exports ---
+
+// Combined list of hand-crafted Hero products + Procedurally generated ones
+export const allProducts = [
   ...heroProducts,
-  ...generateProceduralProducts(192) // Generate remaining to reach ~200
+  ...generateProceduralProducts(200)
 ];
 
-// Helper to get products (Simulates API)
+// CRITICAL FIX: Export mockProducts as alias for allProducts to match import in useProducts.js
+export const mockProducts = allProducts;
+
+// Export raw heroes if needed separately
+export { heroProducts };
+
+/**
+ * Simulated API call to fetch products
+ * @param {Object} params - Filter parameters
+ * @returns {Promise} Resolves with paginated-like response
+ */
 export const getMockProducts = async (params) => {
-    // Simulate network delay
+    // Simulate network delay (300ms)
     await new Promise(resolve => setTimeout(resolve, 300));
     
-    let filtered = [...mockProducts];
+    let filtered = [...allProducts];
     
+    // Safety check: Ensure we start with an array
+    if (!Array.isArray(filtered)) filtered = [];
+
+    // Filter by Category
     if (params?.category && params.category !== 'Todos') {
         filtered = filtered.filter(p => p.category === params.category);
     }
     
+    // Filter by Featured
     if (params?.featured) {
         filtered = filtered.filter(p => p.isFeatured);
     }
 
+    // Filter by Offers (Logic: Price < 500 or isFeatured as a proxy for this mock)
+    if (params?.filter === 'offers') {
+        filtered = filtered.filter(p => p.price < 500 || p.promotion);
+    }
+
     return {
-        docs: filtered,
+        docs: filtered, // Will be [] if no matches, never null/undefined
         totalDocs: filtered.length,
-        totalPages: 1,
+        totalPages: 1, // Mock pagination
         page: 1
     };
 };
