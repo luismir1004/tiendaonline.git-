@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   ShoppingCart, Menu, X, Zap, Search, User, LogOut, 
-  ChevronDown, Heart, ArrowRight, Package, Smartphone, 
-  Headphones, Cpu 
+  ChevronDown, Heart, Package, Smartphone, 
+  Headphones, Cpu, Settings, ListOrdered
 } from 'lucide-react';
 import { 
   motion, AnimatePresence, useScroll, useMotionValueEvent 
@@ -18,8 +18,9 @@ import useCurrencyStore from '../stores/currencyStore';
 // Components
 import SearchOverlay from './SearchOverlay';
 import MarqueeBanner from './navbar/MarqueeBanner';
+import DesktopMegaMenu from './navbar/DesktopMegaMenu';
 
-// --- DATOS DE NAVEGACIÓN (Configurable) ---
+// --- DATOS DE NAVEGACIÓN ---
 const NAV_ITEMS = [
   {
     id: 'explorar',
@@ -42,7 +43,6 @@ const NAV_ITEMS = [
         ]
       }
     ],
-    // Tarjeta Promocional Integrada
     promo: {
       title: "Audio Week",
       subtitle: "30% OFF en Auriculares Pro",
@@ -55,12 +55,14 @@ const NAV_ITEMS = [
     id: 'ofertas',
     label: 'Ofertas',
     type: 'link',
-    href: '/?filter=offers'
+    href: '/ofertas',
+    highlight: true,
+    badge: 'LIVE'
   },
   {
     id: 'nosotros',
     label: 'Nosotros',
-    type: 'link',
+    type: 'link', // Cambiado a Link para SPA
     href: '/about'
   }
 ];
@@ -73,7 +75,7 @@ const Navbar = () => {
   const [activeMenu, setActiveMenu] = useState(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   
-  // Refs para "Hover Intent" (Debounce)
+  // Refs para "Hover Intent"
   const hoverTimeoutRef = useRef(null);
   
   // Hooks
@@ -81,16 +83,15 @@ const Navbar = () => {
   const location = useLocation();
   const { scrollY } = useScroll();
 
-  // --- CONEXIÓN CON ZUSTAND ---
+  // --- STORES ---
   const { cart: cartItems, openCart } = useCartStore();
-  // Calculamos la cantidad total para el badge
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
   
   const { isAuthenticated, currentUser, logout } = useAuthStore();
   const { wishlist } = useWishlistStore();
   const { currency, setCurrency } = useCurrencyStore();
 
-  // --- LÓGICA DE SCROLL COMPACTO ---
+  // --- SCROLL OPTIMIZADO ---
   useMotionValueEvent(scrollY, "change", (latest) => {
     const shouldBeScrolled = latest > 10;
     if (isScrolled !== shouldBeScrolled) {
@@ -98,14 +99,13 @@ const Navbar = () => {
     }
   });
 
-  // --- LÓGICA DE INTERACCIÓN (Hover Intent) ---
+  // --- HANDLERS ---
   const handleMenuEnter = (menuId) => {
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
     setActiveMenu(menuId);
   };
 
   const handleMenuLeave = () => {
-    // Retraso de 200ms para evitar cierres accidentales
     hoverTimeoutRef.current = setTimeout(() => {
       setActiveMenu(null);
     }, 200);
@@ -117,7 +117,6 @@ const Navbar = () => {
     setUserMenuOpen(false);
   };
 
-  // Cerrar menús al cambiar de ruta
   useEffect(() => {
     setMobileMenuOpen(false);
     setActiveMenu(null);
@@ -134,19 +133,19 @@ const Navbar = () => {
             isScrolled ? 'py-2' : 'py-5'
         }`}
       >
-        {/* Fondo Glassmorphism Dinámico */}
+        {/* Fondo Glassmorphism */}
         <div 
           className={`absolute inset-0 transition-all duration-500 rounded-b-[2.5rem] mx-2 shadow-sm border-b border-white/10 ${
             isScrolled 
                 ? 'bg-white/85 backdrop-blur-xl' 
-                : 'bg-white/60 backdrop-blur-md' // Un poco de blur siempre para legibilidad
+                : 'bg-white/60 backdrop-blur-md'
           }`}
         />
 
         <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
           <div className="flex items-center justify-between">
             
-            {/* --- 1. LOGO --- */}
+            {/* 1. LOGO */}
             <Link to="/" className="flex items-center gap-2 group">
               <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-slate-900 text-white overflow-hidden shadow-lg group-hover:shadow-indigo-500/30 transition-all duration-500">
                 <Zap size={20} className="relative z-10 fill-white" />
@@ -157,116 +156,108 @@ const Navbar = () => {
               </span>
             </Link>
 
-            {/* --- 2. DESKTOP MEGA MENU --- */}
+            {/* 2. DESKTOP NAV */}
             <nav className="hidden lg:flex items-center gap-8" onMouseLeave={handleMenuLeave}>
-              {NAV_ITEMS.map((item) => (
-                <div key={item.id} className="relative">
-                  {item.type === 'mega' ? (
-                    <button
-                      onMouseEnter={() => handleMenuEnter(item.id)}
-                      className={`flex items-center gap-1 text-sm font-bold transition-colors py-3
-                        ${activeMenu === item.id ? 'text-indigo-600' : 'text-slate-600 hover:text-slate-900'}
-                      `}
-                      aria-expanded={activeMenu === item.id}
-                    >
-                      {item.label}
-                      <ChevronDown 
-                        size={14} 
-                        className={`transition-transform duration-300 ${activeMenu === item.id ? 'rotate-180' : ''}`} 
-                      />
-                    </button>
-                  ) : (
-                    <Link 
-                      to={item.href}
-                      className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors py-3"
-                    >
-                      {item.label}
-                    </Link>
-                  )}
-
-                  {/* PANEL DESPLEGABLE */}
-                  <AnimatePresence>
-                    {activeMenu === item.id && item.type === 'mega' && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 15, scale: 0.98 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.98 }}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="absolute top-full left-1/2 -translate-x-1/2 pt-4 w-[900px]"
+              {NAV_ITEMS.map((item) => {
+                const isActive = item.href && item.href.includes('?') 
+                    ? location.pathname === item.href.split('?')[0] && location.search.includes(item.href.split('?')[1])
+                    : location.pathname === item.href;
+                
+                return (
+                  <div key={item.id} className="relative">
+                    {item.type === 'mega' ? (
+                      <button
                         onMouseEnter={() => handleMenuEnter(item.id)}
+                        className={`flex items-center gap-1 text-sm font-bold transition-colors py-3
+                          ${activeMenu === item.id ? 'text-indigo-600' : 'text-slate-600 hover:text-slate-900'}
+                        `}
+                        aria-expanded={activeMenu === item.id}
                       >
-                        <div className="bg-white rounded-[2rem] shadow-2xl border border-slate-100 overflow-hidden ring-1 ring-black/5">
-                            <div className="grid grid-cols-4 min-h-[320px]">
-                            {/* Columnas de Navegación */}
-                            <div className="col-span-3 p-8 grid grid-cols-2 gap-8">
-                                {item.columns.map((col, idx) => (
-                                <div key={idx}>
-                                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-6">
-                                    {col.title}
-                                    </h4>
-                                    <ul className="space-y-4">
-                                    {col.items.map((subItem, subIdx) => (
-                                        <li key={subIdx}>
-                                        <Link 
-                                            to={subItem.href}
-                                            className="group flex items-start gap-4 p-2 -mx-2 rounded-xl hover:bg-slate-50 transition-colors"
-                                        >
-                                            <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors">
-                                            <subItem.icon size={20} />
-                                            </div>
-                                            <div>
-                                            <div className="font-bold text-slate-900 group-hover:text-indigo-700 transition-colors">
-                                                {subItem.label}
-                                            </div>
-                                            <p className="text-xs text-slate-500 mt-0.5 font-medium">
-                                                {subItem.desc}
-                                            </p>
-                                            </div>
-                                        </Link>
-                                        </li>
-                                    ))}
-                                    </ul>
-                                </div>
-                                ))}
-                            </div>
+                        {item.label}
+                        <ChevronDown 
+                          size={14} 
+                          className={`transition-transform duration-300 ${activeMenu === item.id ? 'rotate-180' : ''}`} 
+                        />
+                      </button>
+                    ) : item.id === 'ofertas' ? (
+                         <Link 
+                            to={item.href}
+                            className="relative group flex items-center gap-2 px-5 py-2 rounded-full overflow-hidden transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-indigo-500/20"
+                         >
+                            {/* Animated Gradient Background */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] animate-gradient-xy" />
+                            
+                            {/* Shimmer Effect */}
+                            <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent z-10" />
 
-                            {/* Columna Promocional (Visual) */}
-                            <div className="col-span-1 relative bg-slate-900 flex flex-col justify-end overflow-hidden group">
-                                <img 
-                                src={item.promo.image} 
-                                alt={item.promo.title}
-                                className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:scale-110 transition-transform duration-700"
-                                />
-                                <div className={`absolute inset-0 bg-gradient-to-b ${item.promo.gradient} opacity-80`} />
-                                
-                                <div className="relative z-10 p-8">
-                                <span className="inline-block px-2 py-1 bg-white/20 backdrop-blur-md rounded-lg text-[10px] font-bold text-white mb-3 border border-white/10">
-                                    DESTACADO
+                            <span className="relative z-20 text-white text-sm font-bold tracking-wide">
+                                {item.label}
+                            </span>
+                            
+                            {/* Badge */}
+                            <span className="relative z-20 flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-400 border border-white"></span>
+                            </span>
+                         </Link>
+                    ) : (
+                      <Link 
+                        to={item.href}
+                        className={`relative group flex items-center gap-1.5 text-sm font-bold transition-all py-3 ${
+                          item.highlight 
+                            ? 'bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent hover:from-orange-600 hover:to-red-700'
+                            : isActive ? 'text-indigo-600' : 'text-slate-600 hover:text-indigo-600'
+                        }`}
+                      >
+                        {item.label}
+                        
+                        {/* Highlight Badge */}
+                        {item.highlight && item.badge && !isActive && (
+                            <span className="relative flex h-5 w-8">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-5 w-8 bg-gradient-to-r from-red-500 to-orange-500 items-center justify-center text-[9px] text-white font-black tracking-tighter">
+                                    {item.badge}
                                 </span>
-                                <h3 className="text-xl font-bold text-white leading-tight mb-2">
-                                    {item.promo.title}
-                                </h3>
-                                <p className="text-xs text-slate-300 mb-4 line-clamp-2">
-                                    {item.promo.subtitle}
-                                </p>
-                                <Link 
-                                    to={item.promo.href}
-                                    className="inline-flex items-center gap-2 text-xs font-bold text-white uppercase tracking-wider hover:gap-3 transition-all"
-                                >
-                                    Ver Ofertas <ArrowRight size={14} />
-                                </Link>
-                                </div>
-                            </div>
-                            </div>
-                        </div>
-                      </motion.div>
+                            </span>
+                        )}
+
+                        {/* Hover Effect: Center Underline (Adapted color for highlight) */}
+                        <span className={`absolute bottom-0 left-1/2 w-0 h-0.5 transition-all duration-300 group-hover:w-full group-hover:left-0 ease-out rounded-full opacity-0 group-hover:opacity-100 ${
+                            item.highlight ? 'bg-red-500' : 'bg-indigo-600'
+                        }`} />
+
+                        {/* Active Indicator (Persistent) */}
+                        {isActive && !item.highlight && (
+                          <motion.div 
+                            layoutId="activeNav"
+                            className="absolute -bottom-1 left-0 right-0 h-0.5 bg-indigo-600 rounded-full"
+                          />
+                        )}
+                         {/* Active Indicator for Highlighted (Different color) */}
+                         {isActive && item.highlight && (
+                          <motion.div 
+                            layoutId="activeNavHighlight"
+                            className="absolute -bottom-1 left-0 right-0 h-0.5 bg-red-500 rounded-full"
+                          />
+                        )}
+                      </Link>
                     )}
-                  </AnimatePresence>
-                </div>
-              ))}
+                  </div>
+                );
+              })}
+              
+              {/* Mega Menu Componente Externo */}
+              <DesktopMegaMenu 
+                isOpen={!!activeMenu} 
+                activeMenuId={activeMenu}
+                navItems={NAV_ITEMS}
+                onClose={() => setActiveMenu(null)}
+                handleMenuEnter={handleMenuEnter}
+                handleMenuLeave={handleMenuLeave}
+              />
             </nav>
 
-            {/* --- 3. ACCIONES (Derecha) --- */}
+            {/* 3. ACCIONES */}
             <div className="flex items-center gap-2 sm:gap-3">
               
               <button 
@@ -288,7 +279,7 @@ const Navbar = () => {
                 )}
               </button>
 
-              {/* Icono del Carrito (Animado) */}
+              {/* Carrito con Pop Animation */}
               <button
                 onClick={openCart}
                 className="relative p-3 text-slate-900 hover:text-indigo-600 transition-colors"
@@ -298,11 +289,14 @@ const Navbar = () => {
                 <AnimatePresence>
                   {cartCount > 0 && (
                     <motion.span
-                      key={cartCount} // Clave para forzar re-render de animación
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
+                      key={cartCount}
+                      initial={{ scale: 0.5, opacity: 0 }}
+                      animate={{ scale: 1.2, opacity: 1 }}
                       exit={{ scale: 0 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 10 }} // Efecto Pop más pronunciado
+                      onAnimationComplete={() => {
+                         // Reset scale visual hack if needed, but framer handles key change well
+                      }}
                       className="absolute top-0 right-0 bg-indigo-600 text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full ring-2 ring-white shadow-sm"
                     >
                       {cartCount}
@@ -311,7 +305,7 @@ const Navbar = () => {
                 </AnimatePresence>
               </button>
 
-              {/* Perfil de Usuario / Login */}
+              {/* Perfil de Usuario */}
               <div className="hidden sm:block relative">
                 {isAuthenticated ? (
                   <div 
@@ -328,30 +322,33 @@ const Navbar = () => {
                     <AnimatePresence>
                       {userMenuOpen && (
                         <motion.div
-                          initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                          className="absolute right-0 top-full mt-2 w-60 pt-2"
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          className="absolute right-0 top-full mt-2 w-64 pt-2"
                         >
                             <div className="bg-white rounded-[1.5rem] shadow-xl border border-slate-100 overflow-hidden ring-1 ring-black/5">
                                 <div className="px-5 py-4 bg-slate-50/50 border-b border-slate-100">
                                     <p className="text-sm font-bold text-slate-900 truncate">{currentUser?.name}</p>
                                     <p className="text-xs text-slate-500 truncate">{currentUser?.email}</p>
                                 </div>
-                                <div className="p-2">
-                                    <Link to="/profile" className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                                <div className="p-2 space-y-1">
+                                    <Link to="/profile" className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
                                         <User size={18} className="text-indigo-500"/> Mi Perfil
                                     </Link>
-                                    <Link to="/profile?tab=orders" className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
-                                        <Package size={18} className="text-indigo-500"/> Pedidos
+                                    <Link to="/profile?tab=orders" className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                                        <ListOrdered size={18} className="text-blue-500"/> Mis Pedidos
+                                    </Link>
+                                    <Link to="/profile?tab=settings" className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                                        <Settings size={18} className="text-slate-500"/> Configuración
                                     </Link>
                                 </div>
                                 <div className="p-2 border-t border-slate-100">
                                     <button 
                                         onClick={handleLogout}
-                                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 rounded-xl transition-colors"
                                     >
-                                        <LogOut size={18} /> Salir
+                                        <LogOut size={18} /> Cerrar Sesión
                                     </button>
                                 </div>
                             </div>
@@ -381,11 +378,10 @@ const Navbar = () => {
         </div>
       </motion.header>
 
-      {/* --- 4. MOBILE DRAWER (Menú Lateral) --- */}
+      {/* --- 4. MOBILE DRAWER --- */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
-            {/* Overlay Oscuro */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -394,7 +390,6 @@ const Navbar = () => {
               className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-[60] lg:hidden"
             />
             
-            {/* Panel Deslizante (Spring Animation) */}
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
@@ -424,6 +419,7 @@ const Navbar = () => {
                                <Link 
                                  key={`${colIdx}-${subIdx}`}
                                  to={subItem.href}
+                                 onClick={() => setMobileMenuOpen(false)}
                                  className="flex items-center gap-4 p-3 bg-white rounded-2xl border border-slate-100 active:scale-95 transition-transform"
                                >
                                   <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-indigo-600 shrink-0">
@@ -441,7 +437,10 @@ const Navbar = () => {
                     ) : (
                       <Link 
                         to={item.href}
-                        className="block text-2xl font-bold text-slate-900 tracking-tight"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`block text-2xl font-bold tracking-tight ${
+                            location.pathname === item.href ? 'text-indigo-600' : 'text-slate-900'
+                        }`}
                       >
                         {item.label}
                       </Link>
@@ -461,10 +460,37 @@ const Navbar = () => {
                 )}
               </div>
               
+              {/* Currency Toggle Elegante */}
               <div className="p-6 bg-slate-50 border-t border-slate-100">
-                 <div className="flex gap-3">
-                    <button onClick={() => setCurrency('USD')} className={`flex-1 py-3 text-xs font-bold rounded-xl border transition-all ${currency === 'USD' ? 'bg-white border-indigo-600 text-indigo-600 shadow-md' : 'bg-transparent border-slate-200 text-slate-500'}`}>USD ($)</button>
-                    <button onClick={() => setCurrency('EUR')} className={`flex-1 py-3 text-xs font-bold rounded-xl border transition-all ${currency === 'EUR' ? 'bg-white border-indigo-600 text-indigo-600 shadow-md' : 'bg-transparent border-slate-200 text-slate-500'}`}>EUR (€)</button>
+                 <div className="bg-slate-200/50 p-1 rounded-2xl flex relative">
+                    {/* Indicador de fondo animado */}
+                    <motion.div 
+                        className="absolute top-1 bottom-1 bg-white rounded-xl shadow-sm z-0"
+                        layoutId="currencyToggle"
+                        initial={false}
+                        animate={{
+                            left: currency === 'USD' ? 4 : '50%',
+                            width: 'calc(50% - 4px)'
+                        }}
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    />
+                    
+                    <button 
+                        onClick={() => setCurrency('USD')} 
+                        className={`relative z-10 flex-1 py-3 text-xs font-bold text-center transition-colors ${
+                            currency === 'USD' ? 'text-indigo-600' : 'text-slate-500 hover:text-slate-700'
+                        }`}
+                    >
+                        USD ($)
+                    </button>
+                    <button 
+                        onClick={() => setCurrency('EUR')} 
+                        className={`relative z-10 flex-1 py-3 text-xs font-bold text-center transition-colors ${
+                            currency === 'EUR' ? 'text-indigo-600' : 'text-slate-500 hover:text-slate-700'
+                        }`}
+                    >
+                        EUR (€)
+                    </button>
                  </div>
               </div>
 

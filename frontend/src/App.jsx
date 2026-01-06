@@ -16,6 +16,9 @@ const ProductPage = React.lazy(() => import('./pages/ProductPage'));
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
 const CheckoutPage = React.lazy(() => import('./pages/CheckoutPage'));
 const ProfilePage = React.lazy(() => import('./pages/ProfilePage'));
+const AboutPage = React.lazy(() => import('./pages/AboutPage'));
+
+const OffersPage = React.lazy(() => import('./pages/OffersPage'));
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -41,6 +44,14 @@ const AnimatedRoutes = () => {
       <Routes location={location} key={location.pathname}>
         <Route 
             path="/" 
+            element={
+                <PageTransition>
+                    <HomePage />
+                </PageTransition>
+            } 
+        />
+        <Route 
+            path="/productos" 
             element={
                 <PageTransition>
                     <HomePage />
@@ -82,6 +93,22 @@ const AnimatedRoutes = () => {
                 </PageTransition>
             </ProtectedRoute>
           }
+        />
+        <Route 
+            path="/ofertas" 
+            element={
+                <PageTransition>
+                    <OffersPage />
+                </PageTransition>
+            } 
+        />
+        <Route 
+            path="/about" 
+            element={
+                <PageTransition>
+                    <AboutPage />
+                </PageTransition>
+            } 
         />
         <Route 
             path="*" 
