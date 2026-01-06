@@ -5,6 +5,8 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 // Helper de normalización para asegurar consistencia entre Mock y API
 const normalizeProduct = (doc) => {
+  if (!doc) return null; // Guard clause para documentos vacíos
+
   let imageUrl = doc.image;
   
   if (doc.media && doc.media.url) {
@@ -33,7 +35,8 @@ const fetchProducts = async () => {
     throw new Error('Error al conectar con el servidor de Payload');
   }
   const data = await response.json();
-  return data.docs.map(normalizeProduct);
+  // Validación extra: asegurar que docs existe y filtrar nulos
+  return (data?.docs || []).map(normalizeProduct).filter(Boolean);
 };
 
 export const useProducts = () => {

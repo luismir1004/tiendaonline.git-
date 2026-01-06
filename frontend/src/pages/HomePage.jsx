@@ -35,9 +35,11 @@ const HomePage = () => {
 
   // --- 1. Zero-Latency Filtering (Memoized) ---
   const filteredProducts = useMemo(() => {
-    if (!products || products.length === 0) return [];
+    if (!products || !Array.isArray(products) || products.length === 0) return [];
     
-    let result = products;
+    // Filtrado defensivo: asegurar que p existe
+    const validProducts = products.filter(p => p && p.id);
+    let result = validProducts;
 
     if (selectedCategory === 'Ofertas') {
         result = result.filter(p => p.promotion);
@@ -54,8 +56,9 @@ const HomePage = () => {
 
   // Derive Categories dinámicamente
   const categories = useMemo(() => {
-      if (!products || products.length === 0) return ['Todos'];
-      const uniqueCats = [...new Set(products.map(p => p.category).filter(Boolean))];
+      if (!products || !Array.isArray(products) || products.length === 0) return ['Todos'];
+      // Validación defensiva en el map
+      const uniqueCats = [...new Set(products.filter(p => p && p.category).map(p => p.category))];
       return ['Todos', 'Ofertas', ...uniqueCats];
   }, [products]);
 
@@ -128,10 +131,11 @@ const HomePage = () => {
                 {showSkeletons ? (
                     Array.from({ length: 8 }).map((_, i) => <SkeletonProduct key={i} />)
                 ) : (
-                    visibleProducts.map((product) => (
+                    visibleProducts.map((product, index) => (
                         <ProductCard 
                             key={product.id} 
                             product={product} 
+                            index={index}
                             onQuickView={setQuickViewProduct}
                         />
                     ))

@@ -107,9 +107,10 @@ const PageTransition = ({ children }) => (
     </motion.div>
 );
 
-import useCartStore from './stores/cartStore';
+// import useCartStore from './stores/cartStore';
 
 // Invisible component to handle global side effects
+/*
 const InventorySyncer = () => {
   const syncStock = useCartStore(state => state.syncStock);
   
@@ -125,13 +126,14 @@ const InventorySyncer = () => {
 
   return null;
 };
+*/
 
 const App = () => {
   return (
     <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
         <Router>
-            <InventorySyncer />
+            {/* <InventorySyncer /> */}
             <ScrollToTop />
             <Layout>
                 <Suspense fallback={<LoadingSpinner />}>

@@ -1,170 +1,142 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Check, Loader2, Heart, BarChart2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import useCartStore from '../stores/cartStore';
 import useWishlistStore from '../stores/wishlistStore';
 import useCompareStore from '../stores/compareStore';
+import ProductImage from './ProductImage';
 
 /**
- * ProductCard Pro
- * Diseño "High-End" con micro-interacciones refinadas.
- * 
- * UX Decisions:
- * 1. Mobile-First: Hover deshabilitado en touch devices para evitar "doble tap".
- * 2. Feedback Inmediato: El botón de añadir tiene estados visuales claros (Idle -> Loading -> Success).
- * 3. Imagen Interactiva: Cross-fade suave a la segunda imagen en desktop para mostrar más contexto.
+ * ProductCard Pro - Architect Approved
  */
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, index = 10 }) => {
   const navigate = useNavigate();
   const addToCart = useCartStore((state) => state.addToCart);
   const { toggleItem: toggleWishlist, isInWishlist } = useWishlistStore();
   const { addItem: addToCompare } = useCompareStore();
 
-  // Estados Locales de Interacción
-  const [isHovered, setIsHovered] = useState(false);
-  const [addStatus, setAddStatus] = useState('idle'); // 'idle' | 'loading' | 'success'
+  const [addStatus, setAddStatus] = useState('idle');
 
-  // Determinar imágenes (Defensivo: fallback si no hay array)
-  const images = product.images?.length > 0 ? product.images : [product.image];
-  const primaryImage = images[0];
-  const secondaryImage = images[1] || primaryImage;
-  
-  // En móvil usamos siempre la primaria. En desktop, si hay hover y existe segunda imagen, hacemos swap.
-  const shouldShowSecondary = isHovered && images.length > 1;
+  // Validación básica: Si no hay producto, no renderizar nada (evita crash)
+  if (!product || !product.id) return null;
+
+  // Lógica de Prioridad LCP: Solo las 2 primeras tarjetas
+  const isHighPriority = index < 2;
+  const isLiked = isInWishlist(product.id);
 
   const handleQuickAdd = async (e) => {
-    e.stopPropagation(); // Evitar navegar al producto
+    e.stopPropagation();
     if (addStatus !== 'idle' || product.stock === 0) return;
-
     setAddStatus('loading');
-
-    // Simulamos latencia de red para dar peso a la acción (UX Psychology)
-    await new Promise(resolve => setTimeout(resolve, 600));
-
+    
+    // Optimistic UI Delay (simulado para UX)
+    await new Promise(resolve => setTimeout(resolve, 500)); 
+    
     addToCart(product);
     setAddStatus('success');
-
-    // Resetear estado después del feedback positivo
     setTimeout(() => setAddStatus('idle'), 2000);
   };
-
-  const isLiked = isInWishlist(product.id);
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "100px" }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="group relative flex flex-col bg-white rounded-[2rem] border border-slate-100 overflow-hidden cursor-pointer hover:shadow-xl hover:border-slate-200 transition-all duration-500 will-change-transform"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className="group relative flex flex-col w-full h-full cursor-pointer"
       onClick={() => navigate(`/producto/${product.slug}`)}
     >
-      {/* --- Image Stage --- */}
-      <div className="relative aspect-[4/5] bg-slate-50 overflow-hidden">
-        {/* Badge: New / Promo */}
-        <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
+      {/* --- Visual Stage (Fixed Aspect Ratio 4/5) --- */}
+      <div className="relative w-full aspect-[4/5] rounded-[2rem] overflow-hidden bg-slate-100 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1">
+        
+        {/* Badges */}
+        <div className="absolute top-3 left-3 z-30 flex flex-col gap-2 pointer-events-none">
            {product.promotion && (
-             <span className="bg-slate-900 text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm">
+             <span className="bg-slate-900/90 backdrop-blur-md text-white text-[10px] font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm">
                Sale
              </span>
            )}
            {product.isNew && !product.promotion && (
-             <span className="bg-white/90 backdrop-blur text-slate-900 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm">
+             <span className="bg-white/90 backdrop-blur-md text-slate-900 text-[10px] font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm">
                Nuevo
              </span>
            )}
         </div>
 
-        {/* Floating Actions (Desktop Hover Only) */}
-        <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 translate-x-12 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300 ease-out">
+        {/* Actions */}
+        <div className="absolute top-3 right-3 z-30 flex flex-col gap-2 translate-x-12 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300 ease-out">
             <button 
                 onClick={(e) => { e.stopPropagation(); toggleWishlist(product); }}
-                className={`p-2.5 rounded-full shadow-md hover:scale-110 transition-transform ${isLiked ? 'bg-red-50 text-red-500' : 'bg-white text-slate-400 hover:text-slate-900'}`}
+                className={`p-2.5 rounded-full shadow-lg backdrop-blur-sm transition-transform hover:scale-110 ${isLiked ? 'bg-red-50 text-red-500' : 'bg-white/90 text-slate-500 hover:text-slate-900'}`}
             >
-                <Heart size={18} fill={isLiked ? "currentColor" : "none"} />
+                <Heart size={16} fill={isLiked ? "currentColor" : "none"} />
             </button>
             <button 
                 onClick={(e) => { e.stopPropagation(); addToCompare(product); }}
-                className="p-2.5 rounded-full bg-white text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 shadow-md hover:scale-110 transition-transform"
+                className="p-2.5 rounded-full bg-white/90 shadow-lg text-slate-500 hover:text-indigo-600 backdrop-blur-sm hover:scale-110 transition-transform"
             >
-                <BarChart2 size={18} />
+                <BarChart2 size={16} />
             </button>
         </div>
 
-        {/* Smart Image Layering for Cross-Fade */}
-        <div className="w-full h-full relative">
-            {/* Primary Image */}
-            <img 
-                src={primaryImage} 
-                alt={product.name}
-                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${shouldShowSecondary ? 'opacity-0' : 'opacity-100'}`}
-                loading="lazy"
-            />
-            {/* Secondary Image (Preloaded implicitly by being in DOM) */}
-            {images.length > 1 && (
-                <img 
-                    src={secondaryImage} 
-                    alt={`${product.name} alternate`}
-                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out scale-105 ${shouldShowSecondary ? 'opacity-100' : 'opacity-0'}`}
-                    loading="lazy"
-                />
-            )}
-        </div>
+        {/* --- Image Engine Integration --- */}
+        <ProductImage 
+            product={product} 
+            priority={isHighPriority}
+            alt={product.name}
+        />
 
-        {/* Out of Stock Overlay */}
+        {/* Stock Overlay */}
         {product.stock === 0 && (
-            <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-10 flex items-center justify-center">
-                <span className="border-2 border-slate-900 px-4 py-2 font-bold text-slate-900 tracking-widest uppercase text-sm">Agotado</span>
+            <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-40 flex items-center justify-center">
+                <span className="border-2 border-slate-900 px-4 py-2 font-bold text-slate-900 tracking-widest uppercase text-xs">Agotado</span>
             </div>
         )}
       </div>
 
-      {/* --- Product Info --- */}
-      <div className="p-6 flex flex-col flex-grow relative">
-        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-            {product.category}
-        </p>
+      {/* --- Minimalist Info --- */}
+      <div className="mt-4 px-1 flex flex-col flex-grow">
+        <div className="flex justify-between items-start mb-1">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate max-w-[60%]">
+                {product.category || 'General'}
+            </p>
+            <span className="text-sm font-bold text-slate-900">
+                ${product.price?.toLocaleString()}
+            </span>
+        </div>
         
-        <h3 className="text-base font-medium text-slate-900 leading-snug mb-2 group-hover:text-indigo-600 transition-colors duration-300">
+        <h3 className="text-sm font-medium text-slate-700 leading-snug group-hover:text-indigo-600 transition-colors line-clamp-2 min-h-[2.5rem] mb-3">
             {product.name}
         </h3>
 
-        <div className="mt-auto pt-4 flex items-center justify-between border-t border-slate-50">
-            <span className="text-lg font-bold text-slate-900">
-                ${product.price.toLocaleString()}
-            </span>
-
-            {/* Smart Action Button */}
-            <button
+        <div className="mt-auto">
+             <button
                 onClick={handleQuickAdd}
                 disabled={product.stock === 0}
                 className={`
-                    relative w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm
+                    w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300
                     ${product.stock === 0 ? 'bg-slate-100 text-slate-300 cursor-not-allowed' : 
-                      addStatus === 'success' ? 'bg-emerald-500 text-white scale-110' : 
-                      'bg-slate-900 text-white hover:bg-indigo-600 hover:scale-105 active:scale-95'}
+                      addStatus === 'success' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 
+                      'bg-slate-900 text-white hover:bg-indigo-600 hover:shadow-lg hover:shadow-indigo-500/20 active:scale-[0.98]'}
                 `}
-                aria-label="Añadir al carrito"
             >
                 <AnimatePresence mode="wait">
                     {addStatus === 'idle' && (
-                        <motion.div key="plus" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
-                            <Plus size={20} strokeWidth={2.5} />
-                        </motion.div>
+                        <motion.span key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
+                             Añadir al carrito
+                        </motion.span>
                     )}
                     {addStatus === 'loading' && (
-                        <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                            <Loader2 size={18} className="animate-spin" />
+                        <motion.div key="loading" initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                            <Loader2 size={16} className="animate-spin" />
                         </motion.div>
                     )}
                     {addStatus === 'success' && (
-                        <motion.div key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
-                            <Check size={18} strokeWidth={3} />
-                        </motion.div>
+                        <motion.span key="success" initial={{ scale: 0 }} animate={{ scale: 1 }} className="flex items-center gap-2">
+                            <Check size={16} /> Agregado
+                        </motion.span>
                     )}
                 </AnimatePresence>
             </button>
@@ -174,5 +146,4 @@ const ProductCard = ({ product }) => {
   );
 };
 
-// React.memo para evitar re-renders innecesarios si la data del producto no cambia
-export default React.memo(ProductCard);
+export default memo(ProductCard);
