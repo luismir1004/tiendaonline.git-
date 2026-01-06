@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Mail, User, Loader2, ArrowRight, Github, Globe } from 'lucide-react';
+import { Lock, Mail, User, Loader2, ArrowRight, Github, Globe, Zap } from 'lucide-react';
 import useAuthStore from '../stores/authStore';
 import SEO from '../components/SEO';
 import Input from '../components/Input';
@@ -96,212 +96,186 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 lg:bg-white relative overflow-x-hidden">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-900">
       <SEO 
         title={isLogin ? "Iniciar Sesión" : "Crear Cuenta"} 
         description="Accede a tu cuenta de TechNova y descubre ofertas exclusivas." 
       />
 
-      {/* --- Mobile Background / Desktop Right Column --- */}
-      <div className="absolute inset-0 lg:static lg:w-1/2 lg:order-2 h-[45vh] lg:h-auto overflow-hidden z-0">
+      {/* --- Immersive Background --- */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.5 }}
+        className="absolute inset-0 z-0"
+      >
          <SmartImage 
             src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop"
-            alt="Abstract Fluid 3D"
-            className="w-full h-full object-cover"
+            alt="Abstract Tech Background"
+            className="w-full h-full object-cover opacity-60"
          />
-         {/* Overlays */}
-         <div className="absolute inset-0 bg-indigo-900/30 mix-blend-multiply" />
-         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-50/95 lg:hidden" />
-         <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent hidden lg:block" />
+         {/* Gradient Overlay for Readability */}
+         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/60 to-slate-900/40 backdrop-blur-[2px]" />
+      </motion.div>
 
-         {/* Desktop Quote */}
-         <div className="absolute bottom-20 left-20 z-20 max-w-lg hidden lg:block">
-            <blockquote className="text-white text-4xl font-bold leading-tight mb-6 drop-shadow-md">
-                "La tecnología es mejor cuando une a las personas."
-            </blockquote>
-            <div className="flex items-center gap-4">
-                <div className="h-1 w-12 bg-indigo-500 rounded-full"></div>
-                <p className="text-indigo-200 font-medium tracking-wide uppercase text-sm">TechNova Vision</p>
-            </div>
-         </div>
-      </div>
-
-      {/* --- Form Section --- */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center relative z-10 lg:order-1">
-        
-        {/* Mobile: Glass Card Container / Desktop: Clean Layout */}
-        <motion.div 
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className={`
-            w-full max-w-lg mx-auto 
-            mt-[30vh] lg:mt-0 
-            px-8 py-10 lg:p-16 xl:p-24
-            bg-white/80 lg:bg-transparent 
-            backdrop-blur-2xl lg:backdrop-blur-none
-            rounded-[2.5rem] lg:rounded-none
-            shadow-[0_-20px_60px_-15px_rgba(0,0,0,0.1)] lg:shadow-none
-            min-h-[70vh] lg:min-h-0
-          `}
-        >
-          {/* Header */}
-          <div className="mb-10 text-center lg:text-left">
-            <div className="inline-flex items-center justify-center lg:justify-start gap-2 mb-6">
-                 <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-900 text-white shadow-lg shadow-indigo-500/30">
-                    <ArrowRight size={20} className="text-white -rotate-45" />
-                 </div>
-                 <span className="text-2xl font-bold text-slate-900 tracking-tight">TechNova</span>
-            </div>
-
-            <motion.div
-                key={isLogin ? 'login-header' : 'register-header'}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-            >
-                <h1 className="text-3xl font-extrabold text-slate-900 mb-2">
-                    {isLogin ? '¡Hola de nuevo!' : 'Únete a nosotros'}
-                </h1>
-                <p className="text-slate-500 text-base">
-                    {isLogin ? 'Ingresa tus datos para continuar comprando.' : 'Crea tu cuenta y disfruta de beneficios exclusivos.'}
-                </p>
-            </motion.div>
-          </div>
-
-          {/* Form */}
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <AnimatePresence mode='popLayout'>
-              {!isLogin && (
+      {/* --- Glass Card --- */}
+      <motion.div 
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="
+            relative z-10 w-full max-w-md mx-4 sm:mx-auto
+            bg-white/80 backdrop-blur-2xl
+            border border-white/20 shadow-2xl shadow-black/20
+            rounded-[2.5rem] overflow-hidden
+        "
+      >
+          <div className="p-8 sm:p-10">
+            {/* Header: Logo & Title */}
+            <div className="text-center mb-8">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-900 text-white shadow-lg shadow-indigo-500/30 mb-4 group">
+                    <Zap size={24} className="fill-white group-hover:scale-110 transition-transform duration-300" />
+                </div>
+                
                 <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="overflow-hidden"
+                    key={isLogin ? 'login-header' : 'register-header'}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
                 >
-                  <Input 
-                    label="Nombre Completo"
-                    name="name"
-                    type="text"
-                    placeholder="Tu nombre"
-                    value={formData.name}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    error={errors.name}
-                    touched={touched.name}
-                    icon={User}
-                    // Props extras para Input si soporta, sino serán ignorados o pasados al div wrapper
-                    autoComplete="name"
-                  />
+                    <h1 className="text-2xl font-extrabold text-slate-900 mb-2">
+                        {isLogin ? 'Bienvenido' : 'Únete a TechNova'}
+                    </h1>
+                    <p className="text-slate-500 text-sm font-medium">
+                        {isLogin ? 'Tu tecnología favorita te espera.' : 'Crea tu cuenta y empieza a explorar.'}
+                    </p>
                 </motion.div>
-              )}
-            </AnimatePresence>
+            </div>
 
-            <Input 
-              label="Correo Electrónico"
-              name="email"
-              type="email"
-              placeholder="tucorreo@ejemplo.com"
-              value={formData.email}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={errors.email}
-              touched={touched.email}
-              icon={Mail}
-              autoComplete="email"
-              inputMode="email"
-            />
+            {/* Form */}
+            <form className="space-y-5" onSubmit={handleSubmit}>
+                <AnimatePresence mode='popLayout'>
+                {!isLogin && (
+                    <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                    >
+                    <Input 
+                        label="Nombre"
+                        name="name"
+                        type="text"
+                        placeholder="Tu nombre"
+                        value={formData.name}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={errors.name}
+                        touched={touched.name}
+                        icon={User}
+                        autoComplete="name"
+                        // Glassy Input Styling Override (if Input supports className prop or global styles)
+                    />
+                    </motion.div>
+                )}
+                </AnimatePresence>
 
-            <div className="space-y-1">
                 <Input 
-                    label="Contraseña"
-                    name="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={formData.password}
+                    label="Email"
+                    name="email"
+                    type="email"
+                    placeholder="tucorreo@ejemplo.com"
+                    value={formData.email}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    error={errors.password}
-                    touched={touched.password}
-                    icon={Lock}
-                    autoComplete={isLogin ? "current-password" : "new-password"}
+                    error={errors.email}
+                    touched={touched.email}
+                    icon={Mail}
+                    autoComplete="email"
+                    inputMode="email"
                 />
-                {isLogin && (
-                    <div className="flex justify-end">
-                        <button type="button" className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors p-1">
-                            ¿Olvidaste tu contraseña?
+
+                <div className="space-y-2">
+                    <Input 
+                        label="Contraseña"
+                        name="password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={formData.password}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={errors.password}
+                        touched={touched.password}
+                        icon={Lock}
+                        autoComplete={isLogin ? "current-password" : "new-password"}
+                    />
+                    {isLogin && (
+                        <div className="flex justify-end">
+                            <button type="button" className="text-xs font-bold text-indigo-600 hover:text-indigo-700 transition-colors">
+                                ¿Olvidaste tu contraseña?
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                <motion.button
+                    type="submit"
+                    disabled={isSubmitting}
+                    whileHover={!isSubmitting ? { scale: 1.02 } : {}}
+                    whileTap={!isSubmitting ? { scale: 0.98 } : {}}
+                    className={`
+                        relative w-full h-12 flex justify-center items-center rounded-xl text-sm font-bold text-white shadow-xl
+                        transition-all duration-300 overflow-hidden group mt-2
+                        ${isSubmitting ? 'cursor-not-allowed opacity-80' : 'hover:shadow-indigo-500/25'}
+                    `}
+                >
+                    {/* Gradient Background */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 bg-[length:200%_auto] animate-gradient-xy" />
+                    
+                    {/* Shimmer */}
+                    {!isSubmitting && (
+                        <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent z-10" />
+                    )}
+
+                    <span className="relative z-20 flex items-center gap-2">
+                        {isSubmitting ? (
+                        <Loader2 className="animate-spin" size={20} />
+                        ) : (
+                        <>
+                            {isLogin ? 'Entrar' : 'Registrarse'} <ArrowRight size={18} />
+                        </>
+                        )}
+                    </span>
+                </motion.button>
+            </form>
+
+            {/* Social & Toggle Footer */}
+            <div className="mt-8 pt-6 border-t border-slate-200/60">
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                    <button className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-slate-200/80 bg-white/50 hover:bg-white text-slate-700 font-bold text-xs transition-all active:scale-95">
+                        <Globe size={16} className="text-blue-500" />
+                        Google
+                    </button>
+                    <button className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-slate-200/80 bg-white/50 hover:bg-white text-slate-700 font-bold text-xs transition-all active:scale-95">
+                        <Github size={16} className="text-slate-900" />
+                        GitHub
+                    </button>
+                </div>
+
+                <div className="text-center">
+                    <p className="text-slate-500 text-xs font-medium">
+                        {isLogin ? '¿Nuevo en TechNova?' : '¿Ya tienes cuenta?'}
+                        <button 
+                            onClick={toggleMode}
+                            className="ml-1.5 text-indigo-600 font-bold hover:underline focus:outline-none"
+                        >
+                            {isLogin ? 'Crear cuenta gratis' : 'Iniciar sesión'}
                         </button>
-                    </div>
-                )}
-            </div>
-
-            <motion.button
-              type="submit"
-              disabled={isSubmitting}
-              whileHover={!isSubmitting ? { scale: 1.02 } : {}}
-              whileTap={!isSubmitting ? { scale: 0.98 } : {}}
-              className={`
-                relative w-full h-14 flex justify-center items-center rounded-2xl text-base font-bold text-white shadow-xl
-                transition-all duration-300 overflow-hidden group
-                ${isSubmitting ? 'cursor-not-allowed opacity-80' : 'hover:shadow-indigo-500/25'}
-              `}
-            >
-              {/* Gradient Background */}
-              <div className={`absolute inset-0 bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 bg-[length:200%_auto] animate-gradient-xy ${isSubmitting ? '' : ''}`} />
-              
-              {/* Shimmer Overlay */}
-              {!isSubmitting && (
-                <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent z-10" />
-              )}
-
-              <span className="relative z-20 flex items-center gap-2">
-                {isSubmitting ? (
-                  <Loader2 className="animate-spin" size={24} />
-                ) : (
-                  <>
-                    {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'} <ArrowRight size={20} />
-                  </>
-                )}
-              </span>
-            </motion.button>
-          </form>
-
-          {/* Social Login Separator */}
-          <div className="relative my-8">
-            <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white/80 backdrop-blur-xl text-slate-500 font-medium">O continúa con</span>
+                    </p>
+                </div>
             </div>
           </div>
-
-          {/* Social Buttons */}
-          <div className="grid grid-cols-2 gap-4">
-             <button className="flex items-center justify-center gap-2 h-12 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm transition-all hover:border-slate-300 active:scale-95">
-                 <Globe size={20} className="text-blue-500" /> {/* Simulating Google */}
-                 Google
-             </button>
-             <button className="flex items-center justify-center gap-2 h-12 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm transition-all hover:border-slate-300 active:scale-95">
-                 <Github size={20} className="text-slate-900" />
-                 GitHub
-             </button>
-          </div>
-          
-          {/* Toggle Mode */}
-          <div className="mt-10 text-center pb-8 lg:pb-0">
-            <p className="text-slate-500 font-medium">
-              {isLogin ? '¿Aún no tienes cuenta?' : '¿Ya eres miembro?'}
-              <button 
-                onClick={toggleMode}
-                className="ml-2 text-indigo-600 font-bold hover:underline focus:outline-none"
-              >
-                {isLogin ? 'Regístrate ahora' : 'Ingresa aquí'}
-              </button>
-            </p>
-          </div>
-        </motion.div>
-      </div>
+      </motion.div>
     </div>
   );
 };
