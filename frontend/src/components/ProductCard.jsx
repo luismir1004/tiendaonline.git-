@@ -45,11 +45,11 @@ const ProductCard = ({ product, index = 10 }) => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "100px" }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="group relative flex flex-col w-full h-full cursor-pointer"
+      className="group relative flex flex-col w-full h-full cursor-pointer active:scale-95 transition-transform duration-200"
       onClick={() => navigate(`/producto/${product.slug}`)}
     >
       {/* --- Visual Stage (Fixed Aspect Ratio 4/5) --- */}
-      <div className="relative w-full aspect-[4/5] rounded-[2rem] overflow-hidden bg-slate-100 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1">
+      <div className="relative w-full aspect-[4/5] rounded-3xl md:rounded-[2rem] overflow-hidden bg-slate-100 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1">
         
         {/* Badges */}
         <div className="absolute top-3 left-3 z-30 flex flex-col gap-2 pointer-events-none">
@@ -69,13 +69,13 @@ const ProductCard = ({ product, index = 10 }) => {
         <div className="absolute top-3 right-3 z-30 flex flex-col gap-2 translate-x-12 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300 ease-out">
             <button 
                 onClick={(e) => { e.stopPropagation(); toggleWishlist(product); }}
-                className={`p-2.5 rounded-full shadow-lg backdrop-blur-sm transition-transform hover:scale-110 ${isLiked ? 'bg-red-50 text-red-500' : 'bg-white/90 text-slate-500 hover:text-slate-900'}`}
+                className={`p-2.5 rounded-full shadow-lg backdrop-blur-sm transition-transform hover:scale-110 active:scale-90 ${isLiked ? 'bg-red-50 text-red-500' : 'bg-white/90 text-slate-500 hover:text-slate-900'}`}
             >
                 <Heart size={16} fill={isLiked ? "currentColor" : "none"} />
             </button>
             <button 
                 onClick={(e) => { e.stopPropagation(); addToCompare(product); }}
-                className="p-2.5 rounded-full bg-white/90 shadow-lg text-slate-500 hover:text-indigo-600 backdrop-blur-sm hover:scale-110 transition-transform"
+                className="p-2.5 rounded-full bg-white/90 shadow-lg text-slate-500 hover:text-indigo-600 backdrop-blur-sm hover:scale-110 active:scale-90 transition-transform"
             >
                 <BarChart2 size={16} />
             </button>
@@ -107,7 +107,7 @@ const ProductCard = ({ product, index = 10 }) => {
             </span>
         </div>
         
-        <h3 className="text-sm font-medium text-slate-700 leading-snug group-hover:text-indigo-600 transition-colors line-clamp-2 min-h-[2.5rem] mb-3">
+        <h3 className="text-sm font-medium text-slate-700 leading-snug tracking-tight group-hover:text-indigo-600 transition-colors line-clamp-2 min-h-[2.5rem] mb-3">
             {product.name}
         </h3>
 
@@ -116,7 +116,7 @@ const ProductCard = ({ product, index = 10 }) => {
                 onClick={handleQuickAdd}
                 disabled={product.stock === 0}
                 className={`
-                    w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300
+                    w-full py-2.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300
                     ${product.stock === 0 ? 'bg-slate-100 text-slate-300 cursor-not-allowed' : 
                       addStatus === 'success' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 
                       'bg-slate-900 text-white hover:bg-indigo-600 hover:shadow-lg hover:shadow-indigo-500/20 active:scale-[0.98]'}

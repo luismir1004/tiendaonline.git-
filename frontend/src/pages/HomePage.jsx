@@ -104,12 +104,13 @@ const HomePage = () => {
               </div>
               
               {/* Category Pills */}
-              <div className="flex overflow-x-auto pb-2 md:pb-0 gap-2 scrollbar-hide">
+              <div className="flex overflow-x-auto pb-2 md:pb-0 gap-2 scrollbar-hide snap-x snap-mandatory">
                   {categories.map(cat => (
                       <button
                         key={cat}
                         onClick={() => handleCategoryChange(cat)}
                         className={`
+                            snap-start
                             whitespace-nowrap px-4 py-3 rounded-full text-sm font-medium transition-all duration-300 border min-h-[44px]
                             ${selectedCategory === cat 
                                 ? 'bg-slate-900 text-white border-slate-900 shadow-lg scale-105' 
@@ -125,11 +126,13 @@ const HomePage = () => {
           {/* Grid Area */}
           <motion.div 
             layout 
-            className="grid grid-cols-1 min-[450px]:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12"
+            className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6"
           >
             <AnimatePresence mode="popLayout">
                 {showSkeletons ? (
-                    Array.from({ length: 8 }).map((_, i) => <SkeletonProduct key={i} />)
+                    Array.from({ length: 8 }).map((_, i) => (
+                        <SkeletonProduct key={i} />
+                    ))
                 ) : (
                     visibleProducts.map((product, index) => (
                         <ProductCard 

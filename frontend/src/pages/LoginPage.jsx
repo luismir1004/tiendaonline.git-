@@ -96,7 +96,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-900">
+    <div className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden bg-slate-900">
       <SEO 
         title={isLogin ? "Iniciar Sesión" : "Crear Cuenta"} 
         description="Accede a tu cuenta de TechNova y descubre ofertas exclusivas." 

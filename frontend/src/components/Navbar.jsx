@@ -494,7 +494,15 @@ const Navbar = () => {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed inset-y-0 right-0 w-[85%] max-w-sm bg-white/95 backdrop-blur-2xl shadow-2xl z-[70] lg:hidden flex flex-col rounded-l-[2.5rem] overflow-hidden border-l border-white/20"
+              drag="x"
+              dragConstraints={{ left: 0 }}
+              dragElastic={0.1}
+              onDragEnd={(e, { offset, velocity }) => {
+                if (offset.x > 100 || velocity.x > 500) {
+                    setMobileMenuOpen(false);
+                }
+              }}
+              className="fixed inset-y-0 right-0 w-[85%] max-w-sm bg-white/95 backdrop-blur-2xl shadow-2xl z-[70] lg:hidden flex flex-col rounded-l-[2.5rem] overflow-hidden border-l border-white/20 touch-pan-y"
             >
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-slate-100/50">

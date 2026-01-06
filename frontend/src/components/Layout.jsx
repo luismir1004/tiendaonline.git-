@@ -8,6 +8,7 @@ import TopProgressBar from './TopProgressBar';
 import NexusQuickView from './NexusQuickView';
 import ProductComparisonBar from './ProductComparisonBar';
 import BackToTop from './BackToTop';
+import BottomNav from './layout/BottomNav';
 
 /**
  * Layout Principal
@@ -31,6 +32,7 @@ const Layout = ({ children }) => {
       </main>
 
       <BackToTop />
+      <BottomNav />
       <Footer />
     </div>
   );
