@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   ShoppingCart, Menu, X, Zap, Search, User, LogOut, 
   ChevronDown, Heart, Package, Smartphone, 
-  Headphones, Cpu, Settings, ListOrdered
+  Headphones, Cpu, Settings, ListOrdered, ChevronRight, ArrowRight
 } from 'lucide-react';
 import { 
   motion, AnimatePresence, useScroll, useMotionValueEvent 
@@ -67,6 +67,98 @@ const NAV_ITEMS = [
   }
 ];
 
+// --- COMPONENTES AUXILIARES MÓVILES ---
+
+const MobileAccordion = ({ item, closeMenu }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="border-b border-slate-100 last:border-0">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className={`flex items-center justify-between w-full py-4 text-left transition-colors ${
+          isOpen ? 'text-indigo-600' : 'text-slate-900'
+        }`}
+      >
+        <span className="text-lg font-bold tracking-tight">{item.label}</span>
+        <motion.div
+            animate={{ rotate: isOpen ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+        >
+             <ChevronDown size={20} />
+        </motion.div>
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="overflow-hidden"
+          >
+            <div className="pb-6 space-y-6">
+              {/* Columns */}
+              {item.columns.map((col, idx) => (
+                <div key={idx} className="space-y-3">
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">
+                    {col.title}
+                  </h4>
+                  <div className="grid gap-2">
+                    {col.items.map((subItem, subIdx) => (
+                      <Link
+                        key={subIdx}
+                        to={subItem.href}
+                        onClick={closeMenu}
+                        className="flex items-center gap-4 p-3 rounded-2xl bg-slate-50 active:scale-98 transition-transform"
+                      >
+                         <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-600 shadow-sm shrink-0">
+                           <subItem.icon size={20} />
+                         </div>
+                         <div>
+                           <span className="block text-sm font-bold text-slate-900">{subItem.label}</span>
+                           <span className="block text-xs text-slate-500">{subItem.desc}</span>
+                         </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              {/* Promo Card Mobile */}
+              {item.promo && (
+                <Link 
+                   to={item.promo.href}
+                   onClick={closeMenu}
+                   className="block relative overflow-hidden rounded-2xl aspect-video group"
+                >
+                    <img 
+                        src={item.promo.image} 
+                        alt={item.promo.title}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute bottom-0 left-0 p-5 text-white">
+                        <span className={`inline-block px-2 py-1 mb-2 text-[10px] font-bold uppercase tracking-wider rounded-md bg-gradient-to-r ${item.promo.gradient}`}>
+                            Destacado
+                        </span>
+                        <h4 className="text-lg font-bold leading-tight mb-1">{item.promo.title}</h4>
+                        <p className="text-xs text-slate-300 mb-3">{item.promo.subtitle}</p>
+                        <div className="flex items-center gap-1 text-xs font-bold text-white/90">
+                            Ver Ahora <ArrowRight size={14} />
+                        </div>
+                    </div>
+                </Link>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 const Navbar = () => {
   // --- ESTADO LOCAL ---
   const [isScrolled, setIsScrolled] = useState(false);
@@ -115,6 +207,11 @@ const Navbar = () => {
     logout();
     navigate('/');
     setUserMenuOpen(false);
+  };
+
+  const openSearchFromMobile = () => {
+      setMobileMenuOpen(false);
+      setSearchOpen(true);
   };
 
   useEffect(() => {
@@ -378,26 +475,29 @@ const Navbar = () => {
         </div>
       </motion.header>
 
-      {/* --- 4. MOBILE DRAWER --- */}
+      {/* --- 4. MOBILE DRAWER (REFACTORIZADO) --- */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
+            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileMenuOpen(false)}
-              className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-[60] lg:hidden"
+              className="fixed inset-0 bg-slate-900/30 backdrop-blur-md z-[60] lg:hidden"
             />
             
+            {/* Drawer */}
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed inset-y-0 right-0 w-[85%] max-w-sm bg-white/95 backdrop-blur-2xl shadow-2xl z-[70] lg:hidden flex flex-col rounded-l-[2.5rem] overflow-hidden"
+              className="fixed inset-y-0 right-0 w-[85%] max-w-sm bg-white/95 backdrop-blur-2xl shadow-2xl z-[70] lg:hidden flex flex-col rounded-l-[2.5rem] overflow-hidden border-l border-white/20"
             >
-              <div className="flex items-center justify-between p-6 border-b border-slate-100">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-slate-100/50">
                 <span className="text-xl font-bold text-slate-900">Menú</span>
                 <button 
                   onClick={() => setMobileMenuOpen(false)}
@@ -407,90 +507,128 @@ const Navbar = () => {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-6 space-y-8">
-                {NAV_ITEMS.map((item) => (
-                  <div key={item.id}>
-                    {item.type === 'mega' ? (
-                      <div className="space-y-4">
-                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">{item.label}</h3>
-                        <div className="grid gap-3">
-                          {item.columns.map((col, colIdx) => (
-                             col.items.map((subItem, subIdx) => (
-                               <Link 
-                                 key={`${colIdx}-${subIdx}`}
-                                 to={subItem.href}
-                                 onClick={() => setMobileMenuOpen(false)}
-                                 className="flex items-center gap-4 p-3 bg-white rounded-2xl border border-slate-100 active:scale-95 transition-transform"
-                               >
-                                  <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-indigo-600 shrink-0">
-                                    <subItem.icon size={22} />
-                                  </div>
-                                  <div>
-                                    <p className="font-bold text-slate-900 text-sm">{subItem.label}</p>
-                                    <p className="text-xs text-slate-500 line-clamp-1">{subItem.desc}</p>
-                                  </div>
-                               </Link>
-                             ))
-                          ))}
-                        </div>
-                      </div>
-                    ) : (
-                      <Link 
-                        to={item.href}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className={`block text-2xl font-bold tracking-tight ${
-                            location.pathname === item.href ? 'text-indigo-600' : 'text-slate-900'
-                        }`}
-                      >
-                        {item.label}
-                      </Link>
-                    )}
-                  </div>
-                ))}
+              {/* Contenido Scrollable */}
+              <div className="flex-1 overflow-y-auto px-6 py-4">
+                
+                {/* Search Integration */}
+                <div className="mb-6">
+                    <button 
+                        onClick={openSearchFromMobile}
+                        className="w-full flex items-center gap-3 p-4 bg-slate-100/80 rounded-2xl text-slate-500 hover:bg-slate-100 transition-colors group"
+                    >
+                        <Search size={20} className="group-hover:text-indigo-600 transition-colors" />
+                        <span className="font-medium text-sm">Buscar productos...</span>
+                    </button>
+                </div>
 
-                {!isAuthenticated && (
-                   <div className="pt-4">
-                        <Link 
-                            to="/login"
-                            className="flex items-center justify-center w-full py-4 bg-slate-900 text-white text-center rounded-[1.5rem] font-bold shadow-xl shadow-slate-900/20 active:scale-95 transition-transform"
-                        >
-                            Iniciar Sesión / Registro
-                        </Link>
-                   </div>
-                )}
+                {/* Nav Links */}
+                <div className="space-y-1">
+                    {NAV_ITEMS.map((item) => (
+                    <div key={item.id}>
+                        {item.type === 'mega' ? (
+                            <MobileAccordion item={item} closeMenu={() => setMobileMenuOpen(false)} />
+                        ) : item.id === 'ofertas' ? (
+                            <Link 
+                                to={item.href}
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="block my-2"
+                            >
+                                <div className="relative overflow-hidden rounded-2xl p-4 flex items-center justify-between group">
+                                    {/* Animated Background */}
+                                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] animate-gradient-xy" />
+                                    
+                                    <div className="relative z-10 flex items-center gap-3 text-white">
+                                        <span className="text-lg font-bold tracking-wide">Ofertas</span>
+                                        <span className="flex h-2 w-2 relative">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-400 border border-white"></span>
+                                        </span>
+                                    </div>
+                                    <span className="relative z-10 bg-white/20 p-2 rounded-full backdrop-blur-sm group-active:scale-90 transition-transform">
+                                        <ArrowRight size={18} className="text-white" />
+                                    </span>
+                                </div>
+                            </Link>
+                        ) : (
+                            <Link 
+                                to={item.href}
+                                onClick={() => setMobileMenuOpen(false)}
+                                className={`flex items-center justify-between py-4 border-b border-slate-100 last:border-0 ${
+                                    location.pathname === item.href ? 'text-indigo-600' : 'text-slate-900'
+                                }`}
+                            >
+                                <span className="text-lg font-bold tracking-tight">{item.label}</span>
+                                <ChevronRight size={20} className="text-slate-300" />
+                            </Link>
+                        )}
+                    </div>
+                    ))}
+                </div>
               </div>
               
-              {/* Currency Toggle Elegante */}
-              <div className="p-6 bg-slate-50 border-t border-slate-100">
-                 <div className="bg-slate-200/50 p-1 rounded-2xl flex relative">
-                    {/* Indicador de fondo animado */}
-                    <motion.div 
-                        className="absolute top-1 bottom-1 bg-white rounded-xl shadow-sm z-0"
-                        layoutId="currencyToggle"
-                        initial={false}
-                        animate={{
-                            left: currency === 'USD' ? 4 : '50%',
-                            width: 'calc(50% - 4px)'
+              {/* Footer Actions */}
+              <div className="bg-slate-50 border-t border-slate-100">
+                 {/* Quick Actions */}
+                 <div className="grid grid-cols-2 divide-x divide-slate-200 border-b border-slate-100">
+                    <button 
+                        onClick={() => {
+                            if (!isAuthenticated) navigate('/login');
+                            else navigate('/profile');
+                            setMobileMenuOpen(false);
                         }}
-                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    />
-                    
-                    <button 
-                        onClick={() => setCurrency('USD')} 
-                        className={`relative z-10 flex-1 py-3 text-xs font-bold text-center transition-colors ${
-                            currency === 'USD' ? 'text-indigo-600' : 'text-slate-500 hover:text-slate-700'
-                        }`}
+                        className="p-4 flex flex-col items-center justify-center gap-2 hover:bg-slate-100 transition-colors"
                     >
-                        USD ($)
+                         <User size={20} className={isAuthenticated ? "text-indigo-600" : "text-slate-600"} />
+                         <span className="text-xs font-bold text-slate-600">{isAuthenticated ? 'Mi Perfil' : 'Entrar'}</span>
                     </button>
                     <button 
-                        onClick={() => setCurrency('EUR')} 
-                        className={`relative z-10 flex-1 py-3 text-xs font-bold text-center transition-colors ${
-                            currency === 'EUR' ? 'text-indigo-600' : 'text-slate-500 hover:text-slate-700'
-                        }`}
+                         onClick={() => {
+                            navigate('/profile?tab=wishlist');
+                            setMobileMenuOpen(false);
+                         }}
+                         className="p-4 flex flex-col items-center justify-center gap-2 hover:bg-slate-100 transition-colors relative"
                     >
-                        EUR (€)
+                         <div className="relative">
+                             <Heart size={20} className="text-slate-600" />
+                             {wishlist.length > 0 && (
+                                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-slate-50" />
+                             )}
+                         </div>
+                         <span className="text-xs font-bold text-slate-600">Favoritos</span>
                     </button>
+                 </div>
+
+                 {/* Currency Toggle */}
+                 <div className="p-6">
+                    <div className="bg-slate-200/50 p-1 rounded-2xl flex relative">
+                        <motion.div 
+                            className="absolute top-1 bottom-1 bg-white rounded-xl shadow-sm z-0"
+                            layoutId="currencyToggleMobile"
+                            initial={false}
+                            animate={{
+                                left: currency === 'USD' ? 4 : '50%',
+                                width: 'calc(50% - 4px)'
+                            }}
+                            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                        />
+                        
+                        <button 
+                            onClick={() => setCurrency('USD')} 
+                            className={`relative z-10 flex-1 py-3 text-xs font-bold text-center transition-colors ${
+                                currency === 'USD' ? 'text-indigo-600' : 'text-slate-500 hover:text-slate-700'
+                            }`}
+                        >
+                            USD ($)
+                        </button>
+                        <button 
+                            onClick={() => setCurrency('EUR')} 
+                            className={`relative z-10 flex-1 py-3 text-xs font-bold text-center transition-colors ${
+                                currency === 'EUR' ? 'text-indigo-600' : 'text-slate-500 hover:text-slate-700'
+                            }`}
+                        >
+                            EUR (€)
+                        </button>
+                    </div>
                  </div>
               </div>
 
