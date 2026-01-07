@@ -3,7 +3,8 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   ShoppingCart, Menu, X, Zap, Search, User, LogOut,
   ChevronDown, Heart, Package, Smartphone,
-  Headphones, Cpu, Settings, ListOrdered, ChevronRight, ArrowRight
+  Headphones, Cpu, Settings, ListOrdered, ChevronRight, ArrowRight,
+  Compass, Gamepad2, TrendingUp, DollarSign, Sparkles, Tag
 } from 'lucide-react';
 import {
   motion, AnimatePresence, useScroll, useMotionValueEvent
@@ -28,27 +29,36 @@ const NAV_ITEMS = [
     type: 'mega',
     columns: [
       {
-        title: 'Dispositivos',
+        title: 'Categorías',
         items: [
           { label: 'Smartphones', href: '/?category=Celulares', icon: Smartphone, desc: 'Flagships y gama media' },
           { label: 'Laptops', href: '/?category=Computación', icon: Cpu, desc: 'Workstations y Ultrabooks' },
           { label: 'Audio', href: '/?category=Audio', icon: Headphones, desc: 'Sonido Hi-Res' },
+          { label: 'Gaming', href: '/?category=Gaming', icon: Gamepad2, desc: 'Consolas y accesorios' },
         ]
       },
       {
-        title: 'Descubrir',
+        title: 'Por Precio',
         items: [
-          { label: 'Novedades', href: '/?sort=newest', icon: Zap, desc: 'Lanzamientos recientes' },
-          { label: 'Más Vendidos', href: '/?sort=bestsellers', icon: Package, desc: 'Favoritos de la comunidad' },
+          { label: 'Menos de $500', href: '/?maxPrice=500', icon: Tag, desc: 'Opciones accesibles' },
+          { label: '$500 - $1000', href: '/?minPrice=500&maxPrice=1000', icon: DollarSign, desc: 'Gama media-alta' },
+          { label: 'Premium $1000+', href: '/?minPrice=1000', icon: Sparkles, desc: 'Lo mejor de lo mejor' },
+        ]
+      },
+      {
+        title: 'Tendencias',
+        items: [
+          { label: 'Nuevos Lanzamientos', href: '/?sort=newest', icon: Zap, desc: 'Recién llegados' },
+          { label: 'Más Vendidos', href: '/?sort=bestsellers', icon: TrendingUp, desc: 'Favoritos del público' },
         ]
       }
     ],
     promo: {
-      title: "Audio Week",
-      subtitle: "30% OFF en Auriculares Pro",
-      image: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=600&auto=format&fit=crop",
-      href: "/?category=Audio",
-      gradient: "from-violet-600 to-indigo-600"
+      title: "Gaming Week",
+      subtitle: "Hasta 40% OFF en Consolas y Accesorios",
+      image: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?q=80&w=600&auto=format&fit=crop",
+      href: "/?category=Gaming",
+      gradient: "from-purple-600 to-pink-600"
     }
   },
   {
@@ -75,12 +85,23 @@ const MobileAccordion = ({ item, closeMenu }) => {
     <div className="border-b border-slate-100 last:border-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between w-full py-4 text-left transition-colors ${isOpen ? 'text-indigo-600' : 'text-slate-900'}`}
+        className={`flex items-center justify-between w-full py-4 text-left transition-all duration-300 ${isOpen ? 'text-indigo-600' : 'text-slate-900'
+          }`}
       >
-        <span className="text-lg font-bold tracking-tight">{item.label}</span>
+        <div className="flex items-center gap-3">
+          <motion.div
+            animate={{ rotate: isOpen ? 180 : 0 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className={`w-8 h-8 rounded-lg flex items-center justify-center ${isOpen ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-500'
+              }`}
+          >
+            <Compass size={18} />
+          </motion.div>
+          <span className="text-lg font-bold tracking-tight">{item.label}</span>
+        </div>
         <motion.div
           animate={{ rotate: isOpen ? 180 : 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.3 }}
         >
           <ChevronDown size={20} />
         </motion.div>
@@ -98,53 +119,71 @@ const MobileAccordion = ({ item, closeMenu }) => {
             <div className="pb-6 space-y-6">
               {item.columns.map((col, idx) => (
                 <div key={idx} className="space-y-3">
-                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">
-                    {col.title}
-                  </h4>
+                  <div className="flex items-center gap-2">
+                    <div className="h-px flex-1 bg-gradient-to-r from-indigo-200 to-transparent" />
+                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      {col.title}
+                    </h4>
+                    <div className="h-px flex-1 bg-gradient-to-l from-indigo-200 to-transparent" />
+                  </div>
                   <div className="grid gap-2">
                     {col.items.map((subItem, subIdx) => (
-                      <Link
+                      <motion.div
                         key={subIdx}
-                        to={subItem.href}
-                        onClick={closeMenu}
-                        className="flex items-center gap-4 p-3 rounded-2xl bg-slate-50 active:scale-98 transition-transform"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.05 + subIdx * 0.03 }}
                       >
-                        <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-600 shadow-sm shrink-0">
-                          <subItem.icon size={20} />
-                        </div>
-                        <div>
-                          <span className="block text-sm font-bold text-slate-900">{subItem.label}</span>
-                          <span className="block text-xs text-slate-500">{subItem.desc}</span>
-                        </div>
-                      </Link>
+                        <Link
+                          to={subItem.href}
+                          onClick={closeMenu}
+                          className="flex items-center gap-4 p-3 rounded-2xl bg-gradient-to-r from-slate-50 to-slate-50/50 hover:from-indigo-50 hover:to-purple-50 active:scale-98 transition-all shadow-sm"
+                        >
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-white to-slate-50 flex items-center justify-center text-indigo-600 shadow-sm shrink-0 border border-slate-100">
+                            <subItem.icon size={22} strokeWidth={2.5} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="block text-sm font-bold text-slate-900">{subItem.label}</span>
+                            <span className="block text-xs text-slate-500 leading-relaxed">{subItem.desc}</span>
+                          </div>
+                        </Link>
+                      </motion.div>
                     ))}
                   </div>
                 </div>
               ))}
 
               {item.promo && (
-                <Link
-                  to={item.promo.href}
-                  onClick={closeMenu}
-                  className="block relative overflow-hidden rounded-2xl aspect-video group"
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
                 >
-                  <img
-                    src={item.promo.image}
-                    alt={item.promo.title}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 p-5 text-white">
-                    <span className={`inline-block px-2 py-1 mb-2 text-[10px] font-bold uppercase tracking-wider rounded-md bg-gradient-to-r ${item.promo.gradient}`}>
-                      Destacado
-                    </span>
-                    <h4 className="text-lg font-bold leading-tight mb-1">{item.promo.title}</h4>
-                    <p className="text-xs text-slate-300 mb-3">{item.promo.subtitle}</p>
-                    <div className="flex items-center gap-1 text-xs font-bold text-white/90">
-                      Ver Ahora <ArrowRight size={14} />
+                  <Link
+                    to={item.promo.href}
+                    onClick={closeMenu}
+                    className="block relative overflow-hidden rounded-2xl aspect-video group shadow-lg"
+                  >
+                    <img
+                      src={item.promo.image}
+                      alt={item.promo.title}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    <div className={`absolute inset-0 bg-gradient-to-br ${item.promo.gradient} opacity-90 mix-blend-multiply`} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                    <div className="absolute bottom-0 left-0 p-5 text-white">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 mb-2 text-[10px] font-bold uppercase tracking-wider rounded-full bg-white/20 backdrop-blur-md border border-white/20">
+                        <Sparkles size={10} className="fill-white" />
+                        Destacado
+                      </span>
+                      <h4 className="text-lg font-bold leading-tight mb-1">{item.promo.title}</h4>
+                      <p className="text-xs text-slate-200 mb-3">{item.promo.subtitle}</p>
+                      <div className="flex items-center gap-1 text-xs font-bold text-white/90">
+                        Ver Ahora <ArrowRight size={14} />
+                      </div>
                     </div>
-                  </div>
-                </Link>
+                  </Link>
+                </motion.div>
               )}
             </div>
           </motion.div>
@@ -266,12 +305,27 @@ const Navbar = () => {
                       <button
                         onMouseEnter={() => handleMenuEnter(item.id)}
                         className={`
-                          relative px-5 py-2 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-1
-                          ${activeMenu === item.id ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'}
+                          relative px-5 py-2 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2
+                          ${activeMenu === item.id
+                            ? 'bg-white text-indigo-600 shadow-md shadow-indigo-100'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                          }
                         `}
                       >
+                        <motion.div
+                          animate={{ rotate: activeMenu === item.id ? 180 : 0 }}
+                          transition={{ duration: 0.5, ease: "easeInOut" }}
+                        >
+                          <Compass size={16} className={activeMenu === item.id ? 'text-indigo-600' : 'text-slate-500'} />
+                        </motion.div>
                         {item.label}
-                        <ChevronDown size={14} className={`transition-transform duration-300 ${activeMenu === item.id ? 'rotate-180' : ''}`} />
+                        {activeMenu === item.id && (
+                          <motion.div
+                            layoutId="activeIndicator"
+                            className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-indigo-600 rounded-full"
+                            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                          />
+                        )}
                       </button>
                     ) : (
                       <Link

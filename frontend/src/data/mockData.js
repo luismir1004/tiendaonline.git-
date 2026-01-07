@@ -193,6 +193,178 @@ const heroProducts = [
       { label: 'Almacenamiento', value: '64GB', icon: ICONS.storage },
       { label: 'Modos', value: '3 en 1', icon: ICONS.controller },
     ]
+  },
+
+  // --- PRODUCTOS ADICIONALES ÚNICOS ---
+
+  // Celulares adicionales
+  {
+    id: 'phone-003',
+    name: 'Google Pixel 8 Pro',
+    slug: 'google-pixel-8-pro',
+    price: 999.00,
+    stock: 25,
+    category: 'Celulares',
+    isNew: true,
+    isFeatured: true,
+    description: "IA de Google en tu bolsillo. Fotografía computacional de siguiente nivel con Magic Eraser y Best Take.",
+    image: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=75&w=800',
+    images: [
+      'https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&q=75&w=800'
+    ],
+    specs: [
+      { label: 'Procesador', value: 'Google Tensor G3', icon: ICONS.cpu },
+      { label: 'Cámara', value: '50MP + IA', icon: ICONS.camera },
+      { label: 'Pantalla', value: '6.7" LTPO', icon: ICONS.screen },
+    ]
+  },
+  {
+    id: 'phone-004',
+    name: 'OnePlus 12',
+    slug: 'oneplus-12',
+    price: 799.00,
+    stock: 40,
+    category: 'Celulares',
+    isNew: false,
+    isFeatured: false,
+    promotion: true,
+    description: "Velocidad sin compromisos. Carga ultrarrápida de 100W y pantalla AMOLED de 120Hz.",
+    image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=75&w=800',
+    images: [
+      'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=75&w=800'
+    ],
+    specs: [
+      { label: 'Carga', value: '100W SuperVOOC', icon: ICONS.battery },
+      { label: 'RAM', value: '16GB LPDDR5X', icon: ICONS.ram },
+      { label: 'Pantalla', value: '6.82" 120Hz', icon: ICONS.screen },
+    ]
+  },
+
+  // Computación adicional
+  {
+    id: 'comp-003',
+    name: 'Dell XPS 15',
+    slug: 'dell-xps-15',
+    price: 1899.00,
+    stock: 15,
+    category: 'Computación',
+    isNew: false,
+    isFeatured: true,
+    description: "Potencia creativa en diseño premium. Pantalla InfinityEdge 4K OLED y rendimiento profesional.",
+    image: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&q=75&w=800',
+    images: [
+      'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&q=75&w=800'
+    ],
+    specs: [
+      { label: 'Procesador', value: 'Intel i9-13900H', icon: ICONS.cpu },
+      { label: 'GPU', value: 'RTX 4060', icon: ICONS.cpu },
+      { label: 'Pantalla', value: '15.6" 4K OLED', icon: ICONS.screen },
+    ]
+  },
+  {
+    id: 'comp-004',
+    name: 'Microsoft Surface Laptop 5',
+    slug: 'microsoft-surface-laptop-5',
+    price: 1299.00,
+    stock: 20,
+    category: 'Computación',
+    isNew: true,
+    isFeatured: false,
+    description: "Elegancia y productividad. Pantalla táctil PixelSense y teclado Alcantara premium.",
+    image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&q=75&w=800',
+    images: [
+      'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&q=75&w=800'
+    ],
+    specs: [
+      { label: 'Procesador', value: 'Intel i7-1255U', icon: ICONS.cpu },
+      { label: 'RAM', value: '16GB LPDDR5', icon: ICONS.ram },
+      { label: 'Batería', value: '18 Horas', icon: ICONS.battery },
+    ]
+  },
+
+  // Audio adicional
+  {
+    id: 'audio-003',
+    name: 'Bose QuietComfort Ultra',
+    slug: 'bose-quietcomfort-ultra',
+    price: 429.00,
+    stock: 60,
+    category: 'Audio',
+    isNew: true,
+    isFeatured: true,
+    description: "Silencio absoluto redefinido. Audio espacial inmersivo y cancelación de ruido de clase mundial.",
+    image: 'https://images.unsplash.com/photo-1545127398-14699f92334b?auto=format&fit=crop&q=75&w=800',
+    images: [
+      'https://images.unsplash.com/photo-1545127398-14699f92334b?auto=format&fit=crop&q=75&w=800'
+    ],
+    specs: [
+      { label: 'ANC', value: 'CustomTune Pro', icon: ICONS.sound },
+      { label: 'Batería', value: '24 Horas', icon: ICONS.battery },
+      { label: 'Audio', value: 'Spatial Audio', icon: ICONS.sound },
+    ]
+  },
+  {
+    id: 'audio-004',
+    name: 'Beats Studio Pro',
+    slug: 'beats-studio-pro',
+    price: 349.00,
+    stock: 80,
+    category: 'Audio',
+    isNew: false,
+    isFeatured: false,
+    promotion: true,
+    description: "Sonido premium con estilo. Audio espacial personalizado y batería de 40 horas.",
+    image: 'https://images.unsplash.com/photo-1577174881658-0f30157f5c36?auto=format&fit=crop&q=75&w=800',
+    images: [
+      'https://images.unsplash.com/photo-1577174881658-0f30157f5c36?auto=format&fit=crop&q=75&w=800'
+    ],
+    specs: [
+      { label: 'Batería', value: '40 Horas', icon: ICONS.battery },
+      { label: 'Audio', value: 'Lossless USB-C', icon: ICONS.sound },
+      { label: 'ANC', value: 'Adaptativo', icon: ICONS.sound },
+    ]
+  },
+
+  // Gaming adicional
+  {
+    id: 'game-003',
+    name: 'Xbox Series X',
+    slug: 'xbox-series-x',
+    price: 499.00,
+    stock: 18,
+    category: 'Gaming',
+    isNew: false,
+    isFeatured: true,
+    description: "La consola más potente. 4K nativo a 120fps con ray tracing y SSD ultrarrápido.",
+    image: 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?auto=format&fit=crop&q=75&w=800',
+    images: [
+      'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?auto=format&fit=crop&q=75&w=800'
+    ],
+    specs: [
+      { label: 'GPU', value: '12 TFLOPS RDNA 2', icon: ICONS.cpu },
+      { label: 'SSD', value: '1TB NVMe', icon: ICONS.storage },
+      { label: 'Salida', value: '4K @ 120fps', icon: ICONS.screen },
+    ]
+  },
+  {
+    id: 'game-004',
+    name: 'Steam Deck OLED',
+    slug: 'steam-deck-oled',
+    price: 549.00,
+    stock: 35,
+    category: 'Gaming',
+    isNew: true,
+    isFeatured: false,
+    description: "PC gaming portátil. Pantalla OLED HDR y acceso a toda tu biblioteca de Steam.",
+    image: 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?auto=format&fit=crop&q=75&w=800',
+    images: [
+      'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?auto=format&fit=crop&q=75&w=800'
+    ],
+    specs: [
+      { label: 'Pantalla', value: '7.4" OLED HDR', icon: ICONS.screen },
+      { label: 'Almacenamiento', value: '512GB NVMe', icon: ICONS.storage },
+      { label: 'Batería', value: '50Wh', icon: ICONS.battery },
+    ]
   }
 ];
 
@@ -271,10 +443,11 @@ function generateProceduralProducts(count = 200) {
 
 // --- Exports ---
 
-// Combined list of hand-crafted Hero products + Procedurally generated ones
+// Solo exportamos los productos hero únicos (sin duplicados)
+// Comentamos la generación procedural para evitar productos repetidos
 export const allProducts = [
   ...heroProducts,
-  ...generateProceduralProducts(200)
+  // ...generateProceduralProducts(200) // Deshabilitado para evitar duplicados
 ];
 
 // CRITICAL FIX: Export mockProducts as alias for allProducts to match import in useProducts.js
