@@ -1,127 +1,36 @@
-import React, { Suspense } from 'react';
+import React, { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import { Toaster } from 'react-hot-toast';
 import { AnimatePresence, motion } from 'framer-motion';
 
-import Layout from './components/Layout';
-import ProtectedRoute from './components/ProtectedRoute';
+// Componentes Layout (Eager Load)
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
-import ErrorBoundary from './components/ErrorBoundary';
-import NotFoundPage from './pages/NotFoundPage';
+import useAuthStore from './stores/authStore';
 
-// Lazy Load Pages
-const HomePage = React.lazy(() => import('./pages/HomePage'));
-const ProductPage = React.lazy(() => import('./pages/ProductPage'));
-const LoginPage = React.lazy(() => import('./pages/LoginPage'));
-const CheckoutPage = React.lazy(() => import('./pages/CheckoutPage'));
-const ProfilePage = React.lazy(() => import('./pages/ProfilePage'));
-const AboutPage = React.lazy(() => import('./pages/AboutPage'));
+// Lazy Load Páginas
+const HomePage = lazy(() => import('./pages/HomePage'));
+const ProductPage = lazy(() => import('./pages/ProductPage'));
+// const CategoryPage = lazy(() => import('./pages/CategoryPage')); // No existe aún
+const CartPage = lazy(() => import('./pages/CartPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
+const AboutPage = lazy(() => import('./pages/AboutPage'));
+const OffersPage = lazy(() => import('./pages/OffersPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+// const NotFoundPage = lazy(() => import('./pages/NotFoundPage')); // Futuro
 
-const OffersPage = React.lazy(() => import('./pages/OffersPage'));
-
+// Configuración de React Query
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
-            staleTime: 1000 * 60 * 5, // 5 minutes
+            staleTime: 1000 * 60 * 5, // 5 minutos
             refetchOnWindowFocus: false,
         },
     },
 });
-
-const LoadingSpinner = () => (
-  <div className="flex justify-center items-center h-[80vh]">
-    <Loader2 className="h-10 w-10 animate-spin text-slate-900" />
-  </div>
-);
-
-// Wrapper for AnimatePresence to access useLocation
-const AnimatedRoutes = () => {
-  const location = useLocation();
-
-  return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route 
-            path="/" 
-            element={
-                <PageTransition>
-                    <HomePage />
-                </PageTransition>
-            } 
-        />
-        <Route 
-            path="/productos" 
-            element={
-                <PageTransition>
-                    <HomePage />
-                </PageTransition>
-            } 
-        />
-        <Route 
-            path="/producto/:slug" 
-            element={
-                <PageTransition>
-                    <ProductPage />
-                </PageTransition>
-            } 
-        />
-        <Route 
-            path="/login" 
-            element={
-                <PageTransition>
-                    <LoginPage />
-                </PageTransition>
-            } 
-        />
-        <Route 
-          path="/checkout" 
-          element={
-            <ProtectedRoute>
-                <PageTransition>
-                    <CheckoutPage />
-                </PageTransition>
-            </ProtectedRoute>
-          } 
-        />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-                <PageTransition>
-                    <ProfilePage />
-                </PageTransition>
-            </ProtectedRoute>
-          }
-        />
-        <Route 
-            path="/ofertas" 
-            element={
-                <PageTransition>
-                    <OffersPage />
-                </PageTransition>
-            } 
-        />
-        <Route 
-            path="/about" 
-            element={
-                <PageTransition>
-                    <AboutPage />
-                </PageTransition>
-            } 
-        />
-        <Route 
-            path="*" 
-            element={
-                <PageTransition>
-                    <NotFoundPage />
-                </PageTransition>
-            } 
-        />
-      </Routes>
-    </AnimatePresence>
-  );
-};
 
 const PageTransition = ({ children }) => (
     <motion.div
@@ -135,43 +44,63 @@ const PageTransition = ({ children }) => (
     </motion.div>
 );
 
-// import useCartStore from './stores/cartStore';
+const AnimatedRoutes = () => {
+    const location = useLocation();
 
-// Invisible component to handle global side effects
-/*
-const InventorySyncer = () => {
-  const syncStock = useCartStore(state => state.syncStock);
-  
-  React.useEffect(() => {
-    // Sync immediately on mount
-    syncStock();
-    
-    // Optional: Sync on window focus to catch updates if user comes back from another tab
-    const onFocus = () => syncStock();
-    window.addEventListener('focus', onFocus);
-    return () => window.removeEventListener('focus', onFocus);
-  }, [syncStock]);
-
-  return null;
+    return (
+        <AnimatePresence mode="wait">
+            <Routes location={location} key={location.pathname}>
+                <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
+                <Route path="/producto/:slug" element={<PageTransition><ProductPage /></PageTransition>} />
+                {/* <Route path="/categoria/:category" element={<PageTransition><CategoryPage /></PageTransition>} /> */}
+                <Route path="/carrito" element={<PageTransition><CartPage /></PageTransition>} />
+                <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
+                <Route path="/checkout" element={<PageTransition><CheckoutPage /></PageTransition>} />
+                <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
+                <Route path="/ofertas" element={<PageTransition><OffersPage /></PageTransition>} />
+                <Route path="/profile" element={<PageTransition><ProfilePage /></PageTransition>} />
+                {/* <Route path="*" element={<PageTransition><NotFoundPage /></PageTransition>} /> */}
+            </Routes>
+        </AnimatePresence>
+    );
 };
-*/
 
 const App = () => {
-  return (
-    <ErrorBoundary>
+    const checkAuth = useAuthStore((state) => state.checkAuth);
+
+    useEffect(() => {
+        checkAuth();
+    }, [checkAuth]);
+
+    return (
         <QueryClientProvider client={queryClient}>
-        <Router>
-            {/* <InventorySyncer /> */}
-            <ScrollToTop />
-            <Layout>
-                <Suspense fallback={<LoadingSpinner />}>
-                    <AnimatedRoutes />
-                </Suspense>
-            </Layout>
-        </Router>
+            <Router>
+                <div className="flex flex-col min-h-screen font-sans bg-slate-50 text-slate-900">
+                    <ScrollToTop />
+                    <Navbar />
+
+                    <main className="flex-grow pt-20"> {/* PT-20 para compensar Navbar fijo */}
+                        <Suspense fallback={
+                            <div className="flex items-center justify-center min-h-[60vh]">
+                                <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                            </div>
+                        }>
+                            <AnimatedRoutes />
+                        </Suspense>
+                    </main>
+
+                    <Footer />
+                    <Toaster position="bottom-right" toastOptions={{
+                        style: {
+                            background: '#1e293b',
+                            color: '#fff',
+                            borderRadius: '12px',
+                        }
+                    }} />
+                </div>
+            </Router>
         </QueryClientProvider>
-    </ErrorBoundary>
-  );
-}
+    );
+};
 
 export default App;

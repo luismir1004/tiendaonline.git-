@@ -62,13 +62,12 @@ const NAV_ITEMS = [
   {
     id: 'nosotros',
     label: 'Nosotros',
-    type: 'link', // Cambiado a Link para SPA
+    type: 'link',
     href: '/about'
   }
 ];
 
 // --- COMPONENTES AUXILIARES MÓVILES ---
-
 const MobileAccordion = ({ item, closeMenu }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -76,8 +75,7 @@ const MobileAccordion = ({ item, closeMenu }) => {
     <div className="border-b border-slate-100 last:border-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between w-full py-4 text-left transition-colors ${isOpen ? 'text-indigo-600' : 'text-slate-900'
-          }`}
+        className={`flex items-center justify-between w-full py-4 text-left transition-colors ${isOpen ? 'text-indigo-600' : 'text-slate-900'}`}
       >
         <span className="text-lg font-bold tracking-tight">{item.label}</span>
         <motion.div
@@ -98,7 +96,6 @@ const MobileAccordion = ({ item, closeMenu }) => {
             className="overflow-hidden"
           >
             <div className="pb-6 space-y-6">
-              {/* Columns */}
               {item.columns.map((col, idx) => (
                 <div key={idx} className="space-y-3">
                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">
@@ -125,7 +122,6 @@ const MobileAccordion = ({ item, closeMenu }) => {
                 </div>
               ))}
 
-              {/* Promo Card Mobile */}
               {item.promo && (
                 <Link
                   to={item.promo.href}
@@ -167,7 +163,7 @@ const Navbar = () => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [isCartAnimating, setIsCartAnimating] = useState(false);
 
-  // Refs para "Hover Intent"
+  // Refs
   const hoverTimeoutRef = useRef(null);
 
   // Hooks
@@ -179,20 +175,21 @@ const Navbar = () => {
   const { cart: cartItems, openCart } = useCartStore();
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
-  const { isAuthenticated, currentUser, logout } = useAuthStore();
+  // CORRECCIÓN: Usar 'user' en lugar de 'currentUser'
+  const { isAuthenticated, user, logout } = useAuthStore();
   const { wishlist } = useWishlistStore();
   const { currency, setCurrency } = useCurrencyStore();
 
-  // Animación del Carrito
+  // Animación Carrito
   useEffect(() => {
     if (cartCount > 0) {
       setIsCartAnimating(true);
-      const timer = setTimeout(() => setIsCartAnimating(false), 400); // Coincide con duration
+      const timer = setTimeout(() => setIsCartAnimating(false), 400);
       return () => clearTimeout(timer);
     }
   }, [cartCount]);
 
-  // --- SCROLL OPTIMIZADO ---
+  // Scroll Handler
   useMotionValueEvent(scrollY, "change", (latest) => {
     const shouldBeScrolled = latest > 10;
     if (isScrolled !== shouldBeScrolled) {
@@ -200,7 +197,7 @@ const Navbar = () => {
     }
   });
 
-  // --- HANDLERS ---
+  // Handlers
   const handleMenuEnter = (menuId) => {
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
     setActiveMenu(menuId);
@@ -218,11 +215,6 @@ const Navbar = () => {
     setUserMenuOpen(false);
   };
 
-  const openSearchFromMobile = () => {
-    setMobileMenuOpen(false);
-    setSearchOpen(true);
-  };
-
   useEffect(() => {
     setMobileMenuOpen(false);
     setActiveMenu(null);
@@ -235,112 +227,64 @@ const Navbar = () => {
       <MarqueeBanner />
 
       <motion.header
-        className={`fixed top-0 left-0 right-0 z-50 pt-safe-top transition-all duration-300 ease-out ${isScrolled ? 'py-2' : 'py-5'
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ type: "spring", stiffness: 100, damping: 20 }}
+        className={`fixed top-0 left-0 right-0 z-50 pt-safe-top transition-all duration-500 ease-out ${isScrolled ? 'py-2' : 'py-6'
           }`}
       >
-        {/* Fondo Glassmorphism */}
-        <div
-          className={`absolute inset-0 transition-all duration-500 rounded-b-[2.5rem] mx-2 shadow-sm border-b border-white/10 ${isScrolled
-            ? 'bg-white/85 backdrop-blur-xl'
-            : 'bg-white/60 backdrop-blur-md'
-            }`}
-        />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
-          <div className="flex items-center justify-between">
+          {/* Main Container - The "Capsule" */}
+          <div className={`
+              relative flex items-center justify-between px-4 py-2 sm:px-6 sm:py-3 rounded-full transition-all duration-500
+              ${isScrolled
+              ? 'bg-white/80 backdrop-blur-xl border border-white/40 shadow-lg shadow-black/5'
+              : 'bg-white/50 backdrop-blur-lg border border-white/20'
+            }
+          `}>
 
             {/* 1. LOGO */}
-            <Link to="/" className="flex items-center gap-2 group">
-              <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-slate-900 text-white overflow-hidden shadow-lg group-hover:shadow-indigo-500/30 transition-all duration-500">
-                <Zap size={20} className="relative z-10 fill-white" />
+            <Link to="/" className="flex items-center gap-2 group relative z-20">
+              <div className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-900 text-white overflow-hidden shadow-lg group-hover:shadow-indigo-500/30 transition-all duration-500 group-hover:scale-110">
+                <Zap size={20} className="relative z-10 fill-white group-hover:rotate-12 transition-transform duration-300" />
                 <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </div>
-              <span className="text-xl font-bold tracking-tight text-slate-900">
+              <span className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 hidden xs:block">
                 Tech<span className="text-indigo-600">Nova</span>
               </span>
             </Link>
 
             {/* 2. DESKTOP NAV */}
-            <nav className="hidden lg:flex items-center gap-8" onMouseLeave={handleMenuLeave}>
+            <nav className="hidden lg:flex items-center gap-1 bg-slate-100/50 p-1.5 rounded-full border border-white/50 absolute left-1/2 -translate-x-1/2 shadow-inner" onMouseLeave={handleMenuLeave}>
               {NAV_ITEMS.map((item) => {
-                const isActive = item.href && item.href.includes('?')
-                  ? location.pathname === item.href.split('?')[0] && location.search.includes(item.href.split('?')[1])
-                  : location.pathname === item.href;
+                const isActive = item.href ? location.pathname === item.href : false;
 
                 return (
                   <div key={item.id} className="relative">
                     {item.type === 'mega' ? (
                       <button
                         onMouseEnter={() => handleMenuEnter(item.id)}
-                        className={`flex items-center gap-1 text-sm font-bold transition-colors py-3
-                          ${activeMenu === item.id ? 'text-indigo-600' : 'text-slate-600 hover:text-slate-900'}
+                        className={`
+                          relative px-5 py-2 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-1
+                          ${activeMenu === item.id ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'}
                         `}
-                        aria-expanded={activeMenu === item.id}
                       >
                         {item.label}
-                        <ChevronDown
-                          size={14}
-                          className={`transition-transform duration-300 ${activeMenu === item.id ? 'rotate-180' : ''}`}
-                        />
+                        <ChevronDown size={14} className={`transition-transform duration-300 ${activeMenu === item.id ? 'rotate-180' : ''}`} />
                       </button>
-                    ) : item.id === 'ofertas' ? (
-                      <Link
-                        to={item.href}
-                        className="relative group flex items-center gap-2 px-5 py-2 rounded-full overflow-hidden transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-indigo-500/20"
-                      >
-                        {/* Animated Gradient Background */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] animate-gradient-xy" />
-
-                        {/* Shimmer Effect */}
-                        <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent z-10" />
-
-                        <span className="relative z-20 text-white text-sm font-bold tracking-wide">
-                          {item.label}
-                        </span>
-
-                        {/* Badge */}
-                        <span className="relative z-20 flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-400 border border-white"></span>
-                        </span>
-                      </Link>
                     ) : (
                       <Link
                         to={item.href}
-                        className={`relative group flex items-center gap-1.5 text-sm font-bold transition-all py-3 ${item.highlight
-                          ? 'bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent hover:from-orange-600 hover:to-red-700'
-                          : isActive ? 'text-indigo-600' : 'text-slate-600 hover:text-indigo-600'
-                          }`}
+                        className={`
+                          relative px-5 py-2 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2
+                          ${isActive ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'}
+                          ${item.highlight ? 'bg-slate-900 !text-white hover:!bg-slate-800' : ''}
+                        `}
                       >
                         {item.label}
-
-                        {/* Highlight Badge */}
-                        {item.highlight && item.badge && !isActive && (
-                          <span className="relative flex h-5 w-8">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-5 w-8 bg-gradient-to-r from-red-500 to-orange-500 items-center justify-center text-[9px] text-white font-black tracking-tighter">
-                              {item.badge}
-                            </span>
-                          </span>
-                        )}
-
-                        {/* Hover Effect: Center Underline (Adapted color for highlight) */}
-                        <span className={`absolute bottom-0 left-1/2 w-0 h-0.5 transition-all duration-300 group-hover:w-full group-hover:left-0 ease-out rounded-full opacity-0 group-hover:opacity-100 ${item.highlight ? 'bg-red-500' : 'bg-indigo-600'
-                          }`} />
-
-                        {/* Active Indicator (Persistent) */}
-                        {isActive && !item.highlight && (
-                          <motion.div
-                            layoutId="activeNav"
-                            className="absolute -bottom-1 left-0 right-0 h-0.5 bg-indigo-600 rounded-full"
-                          />
-                        )}
-                        {/* Active Indicator for Highlighted (Different color) */}
-                        {isActive && item.highlight && (
-                          <motion.div
-                            layoutId="activeNavHighlight"
-                            className="absolute -bottom-1 left-0 right-0 h-0.5 bg-red-500 rounded-full"
-                          />
+                        {item.highlight && item.badge && (
+                          <span className="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full uppercase tracking-wider">{item.badge}</span>
                         )}
                       </Link>
                     )}
@@ -348,7 +292,7 @@ const Navbar = () => {
                 );
               })}
 
-              {/* Mega Menu Componente Externo */}
+              {/* Mega Menu Dropdown */}
               <DesktopMegaMenu
                 isOpen={!!activeMenu}
                 activeMenuId={activeMenu}
@@ -360,51 +304,43 @@ const Navbar = () => {
             </nav>
 
             {/* 3. ACCIONES */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-1.5 sm:gap-2 relative z-20">
 
+              {/* Search Toggle */}
               <button
                 onClick={() => setSearchOpen(true)}
-                className="p-3 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-all"
-                aria-label="Buscar"
+                className="p-2.5 sm:p-3 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-all active:scale-95"
               >
-                <Search size={22} />
+                <Search size={22} strokeWidth={2} />
               </button>
 
+              {/* Wishlist */}
               <button
                 onClick={() => navigate('/profile?tab=wishlist')}
-                className="hidden sm:block p-3 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-full transition-all relative"
-                aria-label="Favoritos"
+                className="hidden sm:block p-2.5 sm:p-3 text-slate-600 hover:text-red-500 hover:bg-red-50 rounded-full transition-all active:scale-95 relative group"
               >
-                <Heart size={22} />
+                <Heart size={22} strokeWidth={2} className="group-hover:fill-red-50 transition-colors" />
                 {wishlist.length > 0 && (
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white" />
+                  <span className="absolute top-2.5 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white" />
                 )}
               </button>
 
-              {/* Carrito con Pop Animation */}
+              {/* Cart */}
               <button
                 onClick={openCart}
-                className="relative p-3 text-slate-900 hover:text-indigo-600 transition-colors"
-                aria-label="Carrito"
+                className="relative p-2.5 sm:p-3 text-slate-900 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-all active:scale-95 group"
               >
-                <motion.div
-                  animate={isCartAnimating ? { scale: [1, 1.2, 1], rotate: [0, 15, -15, 0] } : {}}
-                  transition={{ duration: 0.4, ease: "easeInOut" }}
-                >
-                  <ShoppingCart size={24} />
+                <motion.div animate={isCartAnimating ? { rotate: [0, 15, -15, 0] } : {}}>
+                  <ShoppingCart size={22} strokeWidth={2} className="group-hover:fill-indigo-100 transition-colors" />
                 </motion.div>
                 <AnimatePresence>
                   {cartCount > 0 && (
                     <motion.span
                       key={cartCount}
-                      initial={{ scale: 0.5, opacity: 0 }}
-                      animate={{ scale: 1.2, opacity: 1 }}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
                       exit={{ scale: 0 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 10 }} // Efecto Pop más pronunciado
-                      onAnimationComplete={() => {
-                        // Reset scale visual hack if needed, but framer handles key change well
-                      }}
-                      className="absolute top-0 right-0 bg-indigo-600 text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full ring-2 ring-white shadow-sm"
+                      className="absolute top-1 right-1 bg-indigo-600 text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full ring-2 ring-white"
                     >
                       {cartCount}
                     </motion.span>
@@ -412,20 +348,28 @@ const Navbar = () => {
                 </AnimatePresence>
               </button>
 
-              {/* Perfil de Usuario */}
+              {/* Separator */}
+              <div className="h-6 w-px bg-slate-200 mx-1 hidden sm:block" />
+
+              {/* User Profile */}
               <div className="hidden sm:block relative">
-                {isAuthenticated ? (
+                {isAuthenticated && user ? (
                   <div
                     className="relative"
                     onMouseEnter={() => setUserMenuOpen(true)}
                     onMouseLeave={() => setUserMenuOpen(false)}
                   >
-                    <button className="flex items-center gap-2 pl-2">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-violet-100 border-2 border-white shadow-sm flex items-center justify-center text-indigo-700 font-bold text-sm">
-                        {currentUser?.name?.charAt(0).toUpperCase()}
+                    <button className="flex items-center gap-2 pl-1 rounded-full p-1 pr-3 hover:bg-slate-100 transition-all border border-transparent hover:border-slate-200">
+                      <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold shadow-md shadow-indigo-200">
+                        {user.name?.charAt(0).toUpperCase() || 'U'}
                       </div>
+                      <span className="text-xs font-bold text-slate-700 max-w-[80px] truncate">
+                        {user.name?.split(' ')[0]}
+                      </span>
+                      <ChevronDown size={14} className="text-slate-400" />
                     </button>
 
+                    {/* Dropdown Menu */}
                     <AnimatePresence>
                       {userMenuOpen && (
                         <motion.div
@@ -434,27 +378,24 @@ const Navbar = () => {
                           exit={{ opacity: 0, y: 10, scale: 0.95 }}
                           className="absolute right-0 top-full mt-2 w-64 pt-2"
                         >
-                          <div className="bg-white rounded-[1.5rem] shadow-xl border border-slate-100 overflow-hidden ring-1 ring-black/5">
-                            <div className="px-5 py-4 bg-slate-50/50 border-b border-slate-100">
-                              <p className="text-sm font-bold text-slate-900 truncate">{currentUser?.name}</p>
-                              <p className="text-xs text-slate-500 truncate">{currentUser?.email}</p>
+                          <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden ring-1 ring-black/5">
+                            <div className="px-5 py-4 bg-slate-50/80 border-b border-slate-100">
+                              <p className="text-sm font-bold text-slate-900 truncate">{user.name}</p>
+                              <p className="text-xs text-slate-500 truncate">{user.email}</p>
                             </div>
                             <div className="p-2 space-y-1">
-                              <Link to="/profile" className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
-                                <User size={18} className="text-indigo-500" /> Mi Perfil
+                              <Link to="/profile" className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-indigo-600 rounded-xl transition-colors">
+                                <User size={18} /> Mi Perfil
                               </Link>
-                              <Link to="/profile?tab=orders" className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
-                                <ListOrdered size={18} className="text-blue-500" /> Mis Pedidos
+                              <Link to="/profile?tab=orders" className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-indigo-600 rounded-xl transition-colors">
+                                <ListOrdered size={18} /> Mis Pedidos
                               </Link>
-                              <Link to="/profile?tab=settings" className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
-                                <Settings size={18} className="text-slate-500" /> Configuración
+                              <Link to="/profile?tab=settings" className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-indigo-600 rounded-xl transition-colors">
+                                <Settings size={18} /> Configuración
                               </Link>
                             </div>
                             <div className="p-2 border-t border-slate-100">
-                              <button
-                                onClick={handleLogout}
-                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-                              >
+                              <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 rounded-xl transition-colors">
                                 <LogOut size={18} /> Cerrar Sesión
                               </button>
                             </div>
@@ -464,118 +405,81 @@ const Navbar = () => {
                     </AnimatePresence>
                   </div>
                 ) : (
-                  <Link
-                    to="/login"
-                    className="ml-2 px-6 py-3 rounded-full bg-slate-900 text-white text-sm font-bold shadow-lg shadow-slate-900/20 hover:scale-105 active:scale-95 transition-all"
-                  >
-                    Entrar
+                  <Link to="/login" className="ml-2 px-5 py-2.5 rounded-full bg-slate-900 text-white text-sm font-bold shadow-lg shadow-slate-900/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+                    <User size={18} />
+                    <span>Entrar</span>
                   </Link>
                 )}
               </div>
 
-              {/* Botón Menú Móvil */}
+              {/* Mobile Menu Button */}
               <button
-                className="lg:hidden p-3 text-slate-900 bg-slate-100 rounded-full hover:bg-slate-200 transition-colors"
                 onClick={() => setMobileMenuOpen(true)}
+                className="lg:hidden p-2.5 text-slate-900 bg-slate-100 rounded-full hover:bg-slate-200 transition-colors active:scale-95"
               >
                 <Menu size={24} />
               </button>
+
             </div>
+
           </div>
         </div>
       </motion.header>
 
-      {/* --- 4. MOBILE DRAWER (REFACTORIZADO) --- */}
+      {/* --- MOBILE DRAWER --- */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileMenuOpen(false)}
-              className="fixed inset-0 bg-slate-900/30 backdrop-blur-md z-[60] lg:hidden"
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] lg:hidden"
             />
 
-            {/* Drawer */}
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              drag="x"
-              dragConstraints={{ left: 0 }}
-              dragElastic={0.1}
-              onDragEnd={(e, { offset, velocity }) => {
-                if (offset.x > 100 || velocity.x > 500) {
-                  setMobileMenuOpen(false);
-                }
-              }}
-              className="fixed inset-y-0 right-0 w-[85%] max-w-sm bg-white/95 backdrop-blur-2xl shadow-2xl z-[70] lg:hidden flex flex-col rounded-l-[2.5rem] overflow-hidden border-l border-white/20 touch-pan-y"
+              className="fixed inset-y-0 right-0 w-[85%] max-w-sm bg-white shadow-2xl z-[70] lg:hidden flex flex-col rounded-l-3xl overflow-hidden"
             >
-              {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-slate-100/50">
+              {/* Mobile Header */}
+              <div className="flex items-center justify-between p-6 border-b border-slate-100">
                 <span className="text-xl font-bold text-slate-900">Menú</span>
-                <button
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition-colors"
-                >
+                <button onClick={() => setMobileMenuOpen(false)} className="p-2 bg-slate-100 rounded-full hover:bg-slate-200">
                   <X size={20} className="text-slate-600" />
                 </button>
               </div>
 
-              {/* Contenido Scrollable */}
+              {/* Scrollable Content */}
               <div className="flex-1 overflow-y-auto px-6 py-4">
+                {/* User Mobile Info */}
+                {isAuthenticated && user && (
+                  <div className="mb-6 p-4 bg-indigo-50 rounded-2xl flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center text-lg font-bold">
+                      {user.name?.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-900">{user.name}</p>
+                      <p className="text-xs text-slate-500">{user.email}</p>
+                    </div>
+                  </div>
+                )}
 
-                {/* Search Integration */}
-                <div className="mb-6">
-                  <button
-                    onClick={openSearchFromMobile}
-                    className="w-full flex items-center gap-3 p-4 bg-slate-100/80 rounded-2xl text-slate-500 hover:bg-slate-100 transition-colors group"
-                  >
-                    <Search size={20} className="group-hover:text-indigo-600 transition-colors" />
-                    <span className="font-medium text-sm">Buscar productos...</span>
-                  </button>
-                </div>
-
-                {/* Nav Links */}
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {NAV_ITEMS.map((item) => (
                     <div key={item.id}>
                       {item.type === 'mega' ? (
                         <MobileAccordion item={item} closeMenu={() => setMobileMenuOpen(false)} />
-                      ) : item.id === 'ofertas' ? (
-                        <Link
-                          to={item.href}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="block my-2"
-                        >
-                          <div className="relative overflow-hidden rounded-2xl p-4 flex items-center justify-between group">
-                            {/* Animated Background */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] animate-gradient-xy" />
-
-                            <div className="relative z-10 flex items-center gap-3 text-white">
-                              <span className="text-lg font-bold tracking-wide">Ofertas</span>
-                              <span className="flex h-2 w-2 relative">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-400 border border-white"></span>
-                              </span>
-                            </div>
-                            <span className="relative z-10 bg-white/20 p-2 rounded-full backdrop-blur-sm group-active:scale-90 transition-transform">
-                              <ArrowRight size={18} className="text-white" />
-                            </span>
-                          </div>
-                        </Link>
                       ) : (
                         <Link
                           to={item.href}
                           onClick={() => setMobileMenuOpen(false)}
-                          className={`flex items-center justify-between py-4 border-b border-slate-100 last:border-0 ${location.pathname === item.href ? 'text-indigo-600' : 'text-slate-900'
-                            }`}
+                          className={`block py-4 text-lg font-bold border-b border-slate-100 ${location.pathname === item.href ? 'text-indigo-600' : 'text-slate-900'}`}
                         >
-                          <span className="text-lg font-bold tracking-tight">{item.label}</span>
-                          <ChevronRight size={20} className="text-slate-300" />
+                          {item.label}
                         </Link>
                       )}
                     </div>
@@ -583,70 +487,21 @@ const Navbar = () => {
                 </div>
               </div>
 
-              {/* Footer Actions */}
-              <div className="bg-slate-50 border-t border-slate-100">
-                {/* Quick Actions */}
-                <div className="grid grid-cols-2 divide-x divide-slate-200 border-b border-slate-100">
-                  <button
-                    onClick={() => {
-                      if (!isAuthenticated) navigate('/login');
-                      else navigate('/profile');
-                      setMobileMenuOpen(false);
-                    }}
-                    className="p-4 flex flex-col items-center justify-center gap-2 hover:bg-slate-100 transition-colors"
-                  >
-                    <User size={20} className={isAuthenticated ? "text-indigo-600" : "text-slate-600"} />
-                    <span className="text-xs font-bold text-slate-600">{isAuthenticated ? 'Mi Perfil' : 'Entrar'}</span>
+              <div className="p-6 border-t border-slate-100 bg-slate-50">
+                {!isAuthenticated ? (
+                  <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold flex justify-center items-center gap-2 mb-3">
+                    <User size={18} /> Iniciar Sesión
+                  </Link>
+                ) : (
+                  <button onClick={handleLogout} className="w-full py-3 bg-white border border-red-100 text-red-600 rounded-xl font-bold flex justify-center items-center gap-2 mb-3">
+                    <LogOut size={18} /> Cerrar Sesión
                   </button>
-                  <button
-                    onClick={() => {
-                      navigate('/profile?tab=wishlist');
-                      setMobileMenuOpen(false);
-                    }}
-                    className="p-4 flex flex-col items-center justify-center gap-2 hover:bg-slate-100 transition-colors relative"
-                  >
-                    <div className="relative">
-                      <Heart size={20} className="text-slate-600" />
-                      {wishlist.length > 0 && (
-                        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-slate-50" />
-                      )}
-                    </div>
-                    <span className="text-xs font-bold text-slate-600">Favoritos</span>
-                  </button>
-                </div>
-
-                {/* Currency Toggle */}
-                <div className="p-6">
-                  <div className="bg-slate-200/50 p-1 rounded-2xl flex relative">
-                    <motion.div
-                      className="absolute top-1 bottom-1 bg-white rounded-xl shadow-sm z-0"
-                      layoutId="currencyToggleMobile"
-                      initial={false}
-                      animate={{
-                        left: currency === 'USD' ? 4 : '50%',
-                        width: 'calc(50% - 4px)'
-                      }}
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    />
-
-                    <button
-                      onClick={() => setCurrency('USD')}
-                      className={`relative z-10 flex-1 py-3 text-xs font-bold text-center transition-colors ${currency === 'USD' ? 'text-indigo-600' : 'text-slate-500 hover:text-slate-700'
-                        }`}
-                    >
-                      USD ($)
-                    </button>
-                    <button
-                      onClick={() => setCurrency('EUR')}
-                      className={`relative z-10 flex-1 py-3 text-xs font-bold text-center transition-colors ${currency === 'EUR' ? 'text-indigo-600' : 'text-slate-500 hover:text-slate-700'
-                        }`}
-                    >
-                      EUR (€)
-                    </button>
-                  </div>
+                )}
+                <div className="flex gap-2">
+                  <button onClick={() => setCurrency('USD')} className={`flex-1 py-2 rounded-lg text-xs font-bold ${currency === 'USD' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}>USD</button>
+                  <button onClick={() => setCurrency('EUR')} className={`flex-1 py-2 rounded-lg text-xs font-bold ${currency === 'EUR' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}>EUR</button>
                 </div>
               </div>
-
             </motion.div>
           </>
         )}

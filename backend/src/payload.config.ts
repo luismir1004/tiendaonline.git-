@@ -21,6 +21,7 @@ import { Users } from '@/collections/Users'
 import { Footer } from '@/globals/Footer'
 import { Header } from '@/globals/Header'
 import { plugins } from './plugins'
+import { createPaymentIntent } from './endpoints/create-payment-intent'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -31,7 +32,7 @@ export default buildConfig({
   cors: [
     'https://mi-tienda-china-frontend.vercel.app', // Ejemplo de Prod
     'https://admin.mi-tienda-china.com',
-    'http://localhost:5173', 
+    'http://localhost:5173',
     'http://localhost:3000'
   ],
   csrf: [
@@ -40,7 +41,7 @@ export default buildConfig({
     'http://localhost:5173',
     'http://localhost:3000'
   ],
-  
+
   admin: {
     components: {
       // The `BeforeLogin` component renders a message that you see while logging into your admin panel.
@@ -94,7 +95,13 @@ export default buildConfig({
     },
   }),
   //email: nodemailerAdapter(),
-  endpoints: [],
+  endpoints: [
+    {
+      path: '/create-payment-intent',
+      method: 'post',
+      handler: createPaymentIntent,
+    },
+  ],
   globals: [Header, Footer],
   plugins,
   secret: process.env.PAYLOAD_SECRET || '',
